@@ -1,0 +1,13 @@
+Gesichtertausch
+==
+
+Necessities
+--
+
+to successfully compile the project you need to …
+
+* adjust CINDER_PATH
+(* install SimpleGUI) -- included as source code
+* install opencv block (version2.2)
+* install Fire Fly SDK
+
