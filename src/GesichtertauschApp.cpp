@@ -39,11 +39,11 @@ private:
     FeatureDetection*       mFaceDetection;
 	vector<Rectf>			mFaces;
     gl::Texture             mCameraTexture;
-
-
+    
+    
     /* properties */
     SimpleGUI*              mGui;
-
+    
     int                     WINDOW_WIDTH;
     int                     WINDOW_HEIGHT;
     
@@ -53,11 +53,12 @@ private:
     int                     FRAME_RATE;
     
     bool                    FULLSCREEN;
+    int                     TRACKING;
     
     /* output */
     LabelControl*           mFaceOut;
     LabelControl*           mFPSOut;
-
+    
 	vector<Rectf>			mEyes;
 };
 
@@ -72,6 +73,7 @@ void GesichtertauschApp::setup()
     mGui->addParam("CAMERA_HEIGHT", &CAMERA_HEIGHT, 0, 2048, 480);
     mGui->addParam("FULLSCREEN", &FULLSCREEN, false, 0);
     mGui->addParam("FRAME_RATE", &FRAME_RATE, 1, 120, 30);
+    mGui->addParam("TRACKING", &TRACKING, 0, 1, 0);
     mGui->addSeparator();
     mFaceOut = mGui->addLabel("");
     mFPSOut = mGui->addLabel("");
@@ -82,6 +84,7 @@ void GesichtertauschApp::setup()
     mGui->getControlByName("CAMERA_WIDTH")->active=false;
     mGui->getControlByName("CAMERA_HEIGHT")->active=false;
     mGui->getControlByName("FULLSCREEN")->active=false;
+    mGui->getControlByName("TRACKING")->active=false;
     
     mGui->load(getResourcePath(RES_SETTINGS));
     mGui->setEnabled(false);
@@ -92,16 +95,23 @@ void GesichtertauschApp::setup()
         hideCursor();
     }
     setWindowSize( WINDOW_WIDTH, WINDOW_HEIGHT );
-
+    
     /* setting up capture device */
     mCameraTexture = gl::Texture(CAMERA_WIDTH, CAMERA_HEIGHT);
-    mFaceDetection = new FeatureDetectionCinder();
+    switch (TRACKING) {
+        case 0:
+            mFaceDetection = new FeatureDetectionCinder();
+            break;
+        case 1:
+            mFaceDetection = new FeatureDetectionOpenCV();
+            break;
+    }
     mFaceDetection->setup(CAMERA_WIDTH, CAMERA_HEIGHT);
 }
 
 void GesichtertauschApp::update() {
     setFrameRate( FRAME_RATE );
-
+    
     {
         stringstream mStr;
         mStr << "FPS: " << getAverageFps();
@@ -117,20 +127,20 @@ void GesichtertauschApp::update() {
 }
 
 void GesichtertauschApp::draw() {
-        if ( ! mCameraTexture ) {
-            return;
-        }
-        
-        gl::setMatricesWindow( getWindowSize() );
-        gl::enableAlphaBlending();
-        
-        // draw the webcam image
-        gl::color( Color( 1, 1, 1 ) );
-        gl::draw( mCameraTexture, Rectf(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT) );
-        mCameraTexture.disable();
-
+    if ( ! mCameraTexture ) {
+        return;
+    }
+    
+    gl::setMatricesWindow( getWindowSize() );
+    gl::enableAlphaBlending();
+    
+    // draw the webcam image
+    gl::color( Color( 1, 1, 1 ) );
+    gl::draw( mCameraTexture, Rectf(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT) );
+    mCameraTexture.disable();
+    
     gl::scale(float(WINDOW_WIDTH) / float(CAMERA_WIDTH), float(WINDOW_HEIGHT) / float(CAMERA_HEIGHT));
-
+    
 	// draw the faces as transparent yellow rectangles
 	gl::color( ColorA( 1, 1, 0, 0.45f ) );
 	for( vector<Rectf>::const_iterator faceIter = mFaces.begin(); faceIter != mFaces.end(); ++faceIter ) {

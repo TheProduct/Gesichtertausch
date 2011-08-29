@@ -25,6 +25,19 @@ class FeatureDetection {
 public:
     virtual void setup(int pCaptureWidth, int pCaptureHeight) = 0;
     virtual void update(gl::Texture& pTexture, vector<Rectf>& pFaces) = 0;
+
+    cv::CascadeClassifier	mFaceCascade;
+
+private:
+    void doFeatureDetection(cv::Mat& smallImg, vector<cv::Rect>& faces) {
+        mFaceCascade.detectMultiScale( smallImg, 
+                                      faces, 
+                                      1.2, 
+                                      2, 
+                                      CV_HAAR_DO_CANNY_PRUNING,
+                                      cv::Size(), 
+                                      cv::Size());
+    }
 };
 
 class FeatureDetectionCinder : public FeatureDetection {
@@ -35,8 +48,6 @@ public:
 private:
     Capture                 mCapture;
     Surface                 mSurface;
-    cv::CascadeClassifier	mFaceCascade;
-    cv::CascadeClassifier   mEyeCascade;
 };
 
 class FeatureDetectionOpenCV : public FeatureDetection {
@@ -45,9 +56,12 @@ public:
     void update(gl::Texture& pTexture, vector<Rectf>& pFaces);
     
 private:
-    CvCapture*              capture;
-    cv::CascadeClassifier	mFaceCascade;
-    cv::CascadeClassifier   mEyeCascade;
+    void detect(    vector<Rectf>& pFaces,
+                cv::Mat& pImage,
+                cv::CascadeClassifier& pCascade, 
+                double pScale);
+    
+    CvCapture*              mCapture;
 };
 
 #endif
