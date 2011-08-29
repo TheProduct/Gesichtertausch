@@ -54,6 +54,7 @@
 		9527E29D14065E3300601156 /* SimpleGUI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SimpleGUI.h; path = ../include/SimpleGUI.h; sourceTree = "<group>"; };
 		9527E2A71406605600601156 /* settings.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = settings.txt; path = ../resources/settings.txt; sourceTree = "<group>"; };
 		9599382D140B91EF004E6F2E /* FeatureDetection.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FeatureDetection.cpp; path = ../src/FeatureDetection.cpp; sourceTree = "<group>"; };
+		95993831140B9923004E6F2E /* FeatureDetection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FeatureDetection.h; path = ../include/FeatureDetection.h; sourceTree = "<group>"; };
 		95F316B414066FF4003528B9 /* Util.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Util.cpp; path = ../src/Util.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -140,6 +141,7 @@
 			isa = PBXGroup;
 			children = (
 				32CA4F630368D1EE00C91783 /* Gesichtertausch_Prefix.pch */,
+				95993831140B9923004E6F2E /* FeatureDetection.h */,
 			);
 			name = Headers;
 			sourceTree = "<group>";
