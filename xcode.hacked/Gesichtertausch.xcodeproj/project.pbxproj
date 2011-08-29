@@ -24,7 +24,6 @@
 		9527E29614065DC800601156 /* pf_tempesta_seven.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 9527E29514065DC800601156 /* pf_tempesta_seven.ttf */; };
 		9527E29C14065E2B00601156 /* SimpleGUI.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9527E29B14065E2B00601156 /* SimpleGUI.cpp */; };
 		9527E2A81406605600601156 /* settings.txt in Resources */ = {isa = PBXBuildFile; fileRef = 9527E2A71406605600601156 /* settings.txt */; };
-		9599382E140B91EF004E6F2E /* FeatureDetection.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9599382D140B91EF004E6F2E /* FeatureDetection.cpp */; };
 		95F316B514066FF4003528B9 /* Util.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 95F316B414066FF4003528B9 /* Util.cpp */; };
 /* End PBXBuildFile section */
 
@@ -53,7 +52,6 @@
 		9527E29B14065E2B00601156 /* SimpleGUI.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SimpleGUI.cpp; path = ../src/SimpleGUI.cpp; sourceTree = "<group>"; };
 		9527E29D14065E3300601156 /* SimpleGUI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SimpleGUI.h; path = ../include/SimpleGUI.h; sourceTree = "<group>"; };
 		9527E2A71406605600601156 /* settings.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = settings.txt; path = ../resources/settings.txt; sourceTree = "<group>"; };
-		9599382D140B91EF004E6F2E /* FeatureDetection.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FeatureDetection.cpp; path = ../src/FeatureDetection.cpp; sourceTree = "<group>"; };
 		95F316B414066FF4003528B9 /* Util.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Util.cpp; path = ../src/Util.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -83,7 +81,6 @@
 			children = (
 				00BAE6590E7ED9C10018A608 /* GesichtertauschApp.cpp */,
 				95F316B414066FF4003528B9 /* Util.cpp */,
-				9599382D140B91EF004E6F2E /* FeatureDetection.cpp */,
 			);
 			name = Source;
 			sourceTree = "<group>";
@@ -267,7 +264,6 @@
 				00BAE65A0E7ED9C10018A608 /* GesichtertauschApp.cpp in Sources */,
 				9527E29C14065E2B00601156 /* SimpleGUI.cpp in Sources */,
 				95F316B514066FF4003528B9 /* Util.cpp in Sources */,
-				9599382E140B91EF004E6F2E /* FeatureDetection.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -289,10 +285,18 @@
 				INSTALL_PATH = "$(HOME)/Applications";
 				OTHER_LDFLAGS = (
 					"\"$(CINDER_PATH)/lib/libcinder_d.a\"",
-					"\"$(CINDER_PATH)/blocks/opencv/lib/macosx/libopencv_imgproc.a\"",
-					"\"$(CINDER_PATH)/blocks/opencv/lib/macosx/libopencv_core.a\"",
-					"\"$(CINDER_PATH)/blocks/opencv/lib/macosx/libopencv_highgui.dylib\"",
-					"\"$(CINDER_PATH)/blocks/opencv/lib/macosx/libopencv_objdetect.a\"",
+					"\"/usr/local/lib/libopencv_imgproc.dylib\"",
+					"\"/usr/local/lib/libopencv_core.dylib\"",
+					"\"/usr/local/lib/libopencv_highgui.dylib\"",
+					"\"/usr/local/lib/libopencv_objdetect.dylib\"",
+					"\"/usr/local/lib/libopencv_ml.dylib\"",
+					"\"/usr/local/lib/libopencv_video.dylib\"",
+					"\"/usr/local/lib/libopencv_legacy.dylib\"",
+					"\"/usr/local/lib/libopencv_gpu.dylib\"",
+					"\"/usr/local/lib/libopencv_flann.dylib\"",
+					"\"/usr/local/lib/libopencv_features2d.dylib\"",
+					"\"/usr/local/lib/libopencv_contrib.dylib\"",
+					"\"/usr/local/lib/libopencv_calib3d.dylib\"",
 				);
 				PRODUCT_NAME = Gesichtertausch;
 				WRAPPER_EXTENSION = app;
@@ -314,13 +318,7 @@
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
 				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(HOME)/Applications";
-				OTHER_LDFLAGS = (
-					"\"$(CINDER_PATH)/lib/libcinder.a\"",
-					"\"$(CINDER_PATH)/blocks/opencv/lib/macosx/libopencv_imgproc.a\"",
-					"\"$(CINDER_PATH)/blocks/opencv/lib/macosx/libopencv_core.a\"",
-					"\"$(CINDER_PATH)/blocks/opencv/lib/macosx/libopencv_objdetect.a\"",
-					"\"$(CINDER_PATH)/blocks/opencv/lib/macosx/libopencv_highgui.dylib\"",
-				);
+				OTHER_LDFLAGS = "";
 				PRODUCT_NAME = Gesichtertausch;
 				STRIP_INSTALLED_PRODUCT = YES;
 				WRAPPER_EXTENSION = app;
@@ -338,7 +336,7 @@
 				HEADER_SEARCH_PATHS = "\"$(CINDER_PATH)/boost\"";
 				MACOSX_DEPLOYMENT_TARGET = 10.5;
 				SDKROOT = macosx;
-				USER_HEADER_SEARCH_PATHS = "\"$(CINDER_PATH)/include\" \"$(CINDER_PATH)/blocks/opencv/include\" ../include";
+				USER_HEADER_SEARCH_PATHS = "\"/usr/local/include\" \"$(CINDER_PATH)/include\" \"$(CINDER_PATH)/blocks/opencv/include\" ../include";
 			};
 			name = Debug;
 		};
@@ -353,7 +351,7 @@
 				HEADER_SEARCH_PATHS = "\"$(CINDER_PATH)/boost\"";
 				MACOSX_DEPLOYMENT_TARGET = 10.5;
 				SDKROOT = macosx;
-				USER_HEADER_SEARCH_PATHS = "\"$(CINDER_PATH)/include\" \"$(CINDER_PATH)/blocks/opencv/include\" ../include";
+				USER_HEADER_SEARCH_PATHS = "\"/usr/local/include\" \"$(CINDER_PATH)/include\" \"$(CINDER_PATH)/blocks/opencv/include\" ../include";
 			};
 			name = Release;
 		};

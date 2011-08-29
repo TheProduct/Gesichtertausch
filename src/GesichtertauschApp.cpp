@@ -35,6 +35,8 @@ public:
     
 private:
 
+    
+    
     void updateFacesCV();
     void detectAndDraw( cv::Mat& img,
                        cv::CascadeClassifier& cascade, 
@@ -101,6 +103,8 @@ void GesichtertauschApp::setup()
     if (USE_CV_CAPTURE) {
         capture = cvCreateCameraCapture( 0 );
         if(!capture) cout << "Capture from CAM " << " didn't work" << endl;
+        cvSetCaptureProperty( capture, CV_CAP_PROP_FRAME_WIDTH, 320 );
+        cvSetCaptureProperty( capture, CV_CAP_PROP_FRAME_HEIGHT, 240 );
     } else {
         mCapture = Capture( CAMERA_WIDTH, CAMERA_HEIGHT );
         mCapture.start();
@@ -117,6 +121,10 @@ void GesichtertauschApp::update()
 {
     setFrameRate( FRAME_RATE );
 
+    stringstream mStr;
+    mStr << "FPS: " << getAverageFps();
+    mFPSOut->setText(mStr.str());
+
     if (USE_CV_CAPTURE) {
         updateFacesCV();
     } else {
@@ -126,10 +134,6 @@ void GesichtertauschApp::update()
             updateFacesCinder( surface );
         }
     }
-    
-    stringstream mStr;
-    mStr << "FPS: " << getAverageFps();
-    mFPSOut->setText(mStr.str());
 }
 
 void GesichtertauschApp::draw()
@@ -148,7 +152,9 @@ void GesichtertauschApp::draw()
         gl::draw( mCameraTexture, Rectf(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT) );
         mCameraTexture.disable();
     }
-	
+
+    gl::scale(float(WINDOW_WIDTH) / float(CAMERA_WIDTH), float(WINDOW_HEIGHT) / float(CAMERA_HEIGHT));
+
 	// draw the faces as transparent yellow rectangles
 	gl::color( ColorA( 1, 1, 0, 0.45f ) );
 	for( vector<Rectf>::const_iterator faceIter = mFaces.begin(); faceIter != mFaces.end(); ++faceIter ) {
@@ -180,6 +186,7 @@ void GesichtertauschApp::updateFacesCV()
             flip( frame, frameCopy, 0 );
         }
         detectAndDraw( frameCopy, mFaceCascade, mEyeCascade, 1. );
+        console() << "FPS: " << getAverageFps() << endl;
     }
 }
 
@@ -222,8 +229,7 @@ void GesichtertauschApp::detectAndDraw( cv::Mat& img,
     printf( "detection time = %g ms\n", t/((double)cvGetTickFrequency()*1000.) );
     console() << faces.size() << endl;
     
-    for( vector<cv::Rect>::const_iterator r = faces.begin(); r != faces.end(); r++, i++ )
-    {
+    for( vector<cv::Rect>::const_iterator r = faces.begin(); r != faces.end(); r++, i++ ) {
         cv::Mat smallImgROI;
         vector<cv::Rect> nestedObjects;
 //        Point center;
@@ -298,20 +304,30 @@ void GesichtertauschApp::updateFacesCinder( Surface cameraImage )
     
 	// detect the faces and iterate them, appending them to mFaces
 	vector<cv::Rect> faces;
-	mFaceCascade.detectMultiScale( smallImg, faces );
+	mFaceCascade.detectMultiScale( smallImg, 
+                                  faces, 
+                                  1.2, 
+                                  2, 
+//                                  CV_HAAR_FIND_BIGGEST_OBJECT
+//                                  CV_HAAR_DO_ROUGH_SEARCH
+                                  CV_HAAR_DO_CANNY_PRUNING
+//                                  CV_HAAR_SCALE_IMAGE
+                                  ,
+                                  cv::Size(), 
+                                  cv::Size());
 	for( vector<cv::Rect>::const_iterator faceIter = faces.begin(); faceIter != faces.end(); ++faceIter ) {
 		Rectf faceRect( fromOcv( *faceIter ) );
 		faceRect *= calcScale;
 		mFaces.push_back( faceRect );
 		
 		// detect eyes within this face and iterate them, appending them to mEyes
-		vector<cv::Rect> eyes;
-		mEyeCascade.detectMultiScale( smallImg( *faceIter ), eyes );
-		for( vector<cv::Rect>::const_iterator eyeIter = eyes.begin(); eyeIter != eyes.end(); ++eyeIter ) {
-			Rectf eyeRect( fromOcv( *eyeIter ) );
-			eyeRect = eyeRect * calcScale + faceRect.getUpperLeft();
-			mEyes.push_back( eyeRect );
-		}
+//		vector<cv::Rect> eyes;
+//		mEyeCascade.detectMultiScale( smallImg( *faceIter ), eyes );
+//		for( vector<cv::Rect>::const_iterator eyeIter = eyes.begin(); eyeIter != eyes.end(); ++eyeIter ) {
+//			Rectf eyeRect( fromOcv( *eyeIter ) );
+//			eyeRect = eyeRect * calcScale + faceRect.getUpperLeft();
+//			mEyes.push_back( eyeRect );
+//		}
 	}
     
     stringstream mStr;
