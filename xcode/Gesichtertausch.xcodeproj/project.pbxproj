@@ -28,8 +28,8 @@
 		95993834140C1A97004E6F2E /* haarcascade_frontalface_default.xml in Resources */ = {isa = PBXBuildFile; fileRef = 95993833140C1A97004E6F2E /* haarcascade_frontalface_default.xml */; };
 		95993837140C1B8B004E6F2E /* haarcascade_frontalface_alt_tree.xml in Resources */ = {isa = PBXBuildFile; fileRef = 95993835140C1B8B004E6F2E /* haarcascade_frontalface_alt_tree.xml */; };
 		95993838140C1B8B004E6F2E /* haarcascade_frontalface_alt2.xml in Resources */ = {isa = PBXBuildFile; fileRef = 95993836140C1B8B004E6F2E /* haarcascade_frontalface_alt2.xml */; };
-		95C6A78D140E51BE0059EB08 /* passThru.vert.glsl in Resources */ = {isa = PBXBuildFile; fileRef = 95C6A78B140E51BE0059EB08 /* passThru.vert.glsl */; };
 		95C6A792140E5F560059EB08 /* posterizer.fs in Resources */ = {isa = PBXBuildFile; fileRef = 95C6A791140E5F560059EB08 /* posterizer.fs */; };
+		95C6A7A2140EA3380059EB08 /* passThru.vs in Resources */ = {isa = PBXBuildFile; fileRef = 95C6A7A1140EA3380059EB08 /* passThru.vs */; };
 		95F316B514066FF4003528B9 /* Util.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 95F316B414066FF4003528B9 /* Util.cpp */; };
 /* End PBXBuildFile section */
 
@@ -63,9 +63,9 @@
 		95993833140C1A97004E6F2E /* haarcascade_frontalface_default.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = haarcascade_frontalface_default.xml; path = ../../../../../../../../coding/opencv/cvs/opencv/data/haarcascades/haarcascade_frontalface_default.xml; sourceTree = "<group>"; };
 		95993835140C1B8B004E6F2E /* haarcascade_frontalface_alt_tree.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = haarcascade_frontalface_alt_tree.xml; path = ../../../../../../../../coding/opencv/cvs/opencv/data/haarcascades/haarcascade_frontalface_alt_tree.xml; sourceTree = "<group>"; };
 		95993836140C1B8B004E6F2E /* haarcascade_frontalface_alt2.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = haarcascade_frontalface_alt2.xml; path = ../../../../../../../../coding/opencv/cvs/opencv/data/haarcascades/haarcascade_frontalface_alt2.xml; sourceTree = "<group>"; };
-		95C6A78B140E51BE0059EB08 /* passThru.vert.glsl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = passThru.vert.glsl; path = ../resources/shader/passThru.vert.glsl; sourceTree = "<group>"; };
 		95C6A790140E52BA0059EB08 /* Resources.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Resources.h; path = ../include/Resources.h; sourceTree = "<group>"; };
 		95C6A791140E5F560059EB08 /* posterizer.fs */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = posterizer.fs; path = ../resources/shader/posterizer.fs; sourceTree = "<group>"; };
+		95C6A7A1140EA3380059EB08 /* passThru.vs */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = passThru.vs; path = ../resources/shader/passThru.vs; sourceTree = "<group>"; };
 		95F316B414066FF4003528B9 /* Util.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Util.cpp; path = ../src/Util.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -161,8 +161,8 @@
 		29B97317FDCFA39411CA2CEA /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				95C6A7A1140EA3380059EB08 /* passThru.vs */,
 				95C6A791140E5F560059EB08 /* posterizer.fs */,
-				95C6A78B140E51BE0059EB08 /* passThru.vert.glsl */,
 				9527E29214065D6100601156 /* haarcascade_frontalface_alt.xml */,
 				95993836140C1B8B004E6F2E /* haarcascade_frontalface_alt2.xml */,
 				95993835140C1B8B004E6F2E /* haarcascade_frontalface_alt_tree.xml */,
@@ -276,8 +276,8 @@
 				95993834140C1A97004E6F2E /* haarcascade_frontalface_default.xml in Resources */,
 				95993837140C1B8B004E6F2E /* haarcascade_frontalface_alt_tree.xml in Resources */,
 				95993838140C1B8B004E6F2E /* haarcascade_frontalface_alt2.xml in Resources */,
-				95C6A78D140E51BE0059EB08 /* passThru.vert.glsl in Resources */,
 				95C6A792140E5F560059EB08 /* posterizer.fs in Resources */,
+				95C6A7A2140EA3380059EB08 /* passThru.vs in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

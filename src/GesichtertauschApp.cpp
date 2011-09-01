@@ -29,8 +29,7 @@ using namespace std;
 using namespace mowa::sgui;
 
 const std::string RES_SETTINGS = "settings.txt";
-//const std::string RES_PASSTHRU_VERT = "./shader/passThru.vert.glsl";
-//const std::string RES_BLUR_FRAG = "./shader/toon.frag.glsl";
+
 
 class GesichtertauschApp : public AppBasic {
 public:
@@ -58,7 +57,6 @@ private:
     void drawEntity(const FaceEntity& pEntity);
     
     FeatureDetection*       mFaceDetection;
-//	vector<Rectf>			mFaces;
     gl::Texture             mCameraTexture;
     vector<FaceEntity>      mEntities;
     Font                    mFont;
@@ -78,11 +76,13 @@ private:
     int                     FRAME_RATE;
     
     bool                    FULLSCREEN;
+    int                     ENABLE_SHADER;
     int                     TRACKING;
     float                   MIN_TRACKING_DISTANCE;
     float                   TIME_BEFOR_IDLE_DEATH;
     float                   MIN_LIFETIME_TO_VIEW;
-    
+    ColorA                  FACE_COLOR_2;
+        
     /* output */
     LabelControl*           mFaceOut;
     LabelControl*           mFPSOut;
@@ -93,7 +93,7 @@ private:
 };
 
 
-void GesichtertauschApp::setup() {      
+void GesichtertauschApp::setup() {
     mTime = 0.0;
     mSerialID = 0;
     
@@ -123,7 +123,9 @@ void GesichtertauschApp::setup() {
     mGui->addParam("MIN_TRACKING_DISTANCE", &MIN_TRACKING_DISTANCE, 1, 100, 50);
     mGui->addParam("TIME_BEFOR_IDLE_DEATH", &TIME_BEFOR_IDLE_DEATH, 0, 10, 0.5);
     mGui->addParam("MIN_LIFETIME_TO_VIEW", &MIN_LIFETIME_TO_VIEW, 0, 10, 1.0);
-    mGui->addParam("ENABLE_SHADER", &ENABLE_SHADER, false, 0);
+    mGui->addParam("ENABLE_SHADER", &ENABLE_SHADER, 0, 1, 0);
+//    mGui->addParam("FACE_COLOR_2", &FACE_COLOR_2, 0, 1, 0);
+    
     mGui->addSeparator();
     mFaceOut = mGui->addLabel("");
     mFPSOut = mGui->addLabel("");
@@ -310,19 +312,33 @@ void GesichtertauschApp::draw() {
     glTranslatef(-WINDOW_WIDTH, 0, 0);
     
     /* shader */
-    mShader.bind();
-    float mThresholds[] = {0.1, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.9};
-    mShader.uniform("thresholds", mThresholds, 11);   
-    mShader.uniform( "tex0", 0 );
+    // TODO make this more opt'd
+    if (ENABLE_SHADER) {
+        mShader.bind();
+        const int STEPS = 16;
+        float mThresholds[STEPS];// = {0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0};
+        for (int i=0; i < STEPS; ++i) {
+            mThresholds[i] = float(i) / float(STEPS - 1);
+        }
+        mShader.uniform("thresholds", mThresholds, 16);   
+        mShader.uniform( "tex0", 0 );
+    }
 
     /* draw the webcam image */
     gl::color( ColorA( 1, 1, 1, 1) );
     gl::draw( mCameraTexture, Rectf(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT) );
     mCameraTexture.disable();
     
+    /* normalize texture coordinates */
+    Vec2f mNormalizeScale = Vec2f(1.0 / float(WINDOW_WIDTH), 1.0 / float(WINDOW_HEIGHT));
+    glMatrixMode(GL_TEXTURE);
+    glPushMatrix();
+    glScalef(mNormalizeScale.x, mNormalizeScale.y, 1.0);
+    glMatrixMode(GL_MODELVIEW);
+    
     /* draw orgiginal faces */
     if (mEntities.size() < 2) {
-        gl::color( ColorA( 1, 1, 1, 1 ) );   
+        gl::color( ColorA( 0, 1, 1, 1 ) );   
         mCameraTexture.enableAndBind();
         for( vector<FaceEntity>::const_iterator mIter = mEntities.begin(); mIter != mEntities.end(); ++mIter ) {
             drawEntity(*mIter);
@@ -332,7 +348,8 @@ void GesichtertauschApp::draw() {
     
     /* HACK // swap faces */
     mCameraTexture.enableAndBind();
-    gl::color( ColorA( 1, 1, 1, 1 ) );   
+    gl::color( ColorA( 1, 0, 0, 1 ) );
+//    gl::color( FACE_COLOR_2 );
     if (mEntities.size() >= 2) {
         const FaceEntity A = mEntities[0];
         const FaceEntity B = mEntities[1];
@@ -351,15 +368,20 @@ void GesichtertauschApp::draw() {
             
             drawEntity(mEntityA);
             drawEntity(mEntityB);
-            
-            console() << mEntityA << endl;
-            console() << mEntityB << endl;
         }
     }
+
+    /* restore texture coordinates */
+    glMatrixMode(GL_TEXTURE);
+    glPopMatrix();
+    glMatrixMode(GL_MODELVIEW);
+
     mCameraTexture.disable();
 
     /* shader */
-    mShader.unbind();
+    if (ENABLE_SHADER) {
+        mShader.unbind();
+    }
 
     /* draw entity IDs */
     for( vector<FaceEntity>::const_iterator mIter = mEntities.begin(); mIter != mEntities.end(); ++mIter ) {
@@ -368,29 +390,47 @@ void GesichtertauschApp::draw() {
         mStr << mEntity.ID;
         gl::drawStringCentered(mStr.str(), mEntity.border.getCenter(), Color(1, 0, 0), mFont);
     }    
-    
+        
     /* gooey */
     mGui->draw();
 }
 
 void GesichtertauschApp::drawEntity(const FaceEntity& mEntity) {
-    Vec2f mNormalizeScale = Vec2f(1.0 / float(WINDOW_WIDTH), 1.0 / float(WINDOW_HEIGHT));
     /* only display entities with a certain lifetime */
     if (mEntity.visible) {
-        Vec2f mLower = Vec2f(mEntity.slice.x1, mEntity.slice.y1);
-        Vec2f mUpper = Vec2f(mEntity.slice.x2, mEntity.slice.y2);
-        mLower *= mNormalizeScale;
-        mUpper *= mNormalizeScale;
-        glBegin(GL_POLYGON);
-        glTexCoord2f(mLower.x, mLower.y);
-        glVertex2f(mEntity.border.x1, mEntity.border.y1);
-        glTexCoord2f(mUpper.x, mLower.y);
-        glVertex2f(mEntity.border.x2, mEntity.border.y1);
-        glTexCoord2f(mUpper.x, mUpper.y);
-        glVertex2f(mEntity.border.x2, mEntity.border.y2);
-        glTexCoord2f(mLower.x, mUpper.y);
-        glVertex2f(mEntity.border.x1, mEntity.border.y2);
-        glEnd();
+        if (!ENABLE_SHADER) {
+            Vec2f mLower = Vec2f(mEntity.slice.x1, mEntity.slice.y1);
+            Vec2f mUpper = Vec2f(mEntity.slice.x2, mEntity.slice.y2);
+            glBegin(GL_POLYGON);
+            glTexCoord2f(mLower.x, mLower.y);
+            glVertex2f(mEntity.border.x1, mEntity.border.y1);
+            glTexCoord2f(mUpper.x, mLower.y);
+            glVertex2f(mEntity.border.x2, mEntity.border.y1);
+            glTexCoord2f(mUpper.x, mUpper.y);
+            glVertex2f(mEntity.border.x2, mEntity.border.y2);
+            glTexCoord2f(mLower.x, mUpper.y);
+            glVertex2f(mEntity.border.x1, mEntity.border.y2);
+            glEnd();
+        } else {
+            
+            Vec2f mCenter = mEntity.border.getCenter();
+            float mRadius = mEntity.border.getWidth() / 2.0; 
+
+            Vec2f mTexCenter = mEntity.slice.getCenter();
+            float mTexRadius = mEntity.slice.getWidth() / 2.0;
+
+            glBegin(GL_POLYGON);
+            for (float r=0; r<M_PI * 2.0;r += (M_PI * 2.0) / 36.0) {
+                Vec2f mTexVertex = Vec2f(sin(r), cos(r)); 
+                mTexVertex *= mTexRadius;
+                glTexCoord2f(mTexVertex.x + mTexCenter.x, mTexVertex.y + mTexCenter.y);
+
+                Vec2f mVertex = Vec2f(sin(r), cos(r)); 
+                mVertex *= mRadius;
+                glVertex2f(mVertex.x + mCenter.x, mVertex.y + mCenter.y);
+            }
+            glEnd();
+        }
     }
 }
 
