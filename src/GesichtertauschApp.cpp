@@ -81,7 +81,9 @@ private:
     float                   MIN_TRACKING_DISTANCE;
     float                   TIME_BEFOR_IDLE_DEATH;
     float                   MIN_LIFETIME_TO_VIEW;
-    ColorA                  FACE_COLOR_2;
+    ColorA                  FACE_COLOR_UNO;
+    ColorA                  FACE_COLOR_DUO;
+    ColorA                  BACKGROUND_IMAGE_COLOR;
         
     /* output */
     LabelControl*           mFaceOut;
@@ -96,6 +98,9 @@ private:
 void GesichtertauschApp::setup() {
     mTime = 0.0;
     mSerialID = 0;
+    FACE_COLOR_UNO = ColorA(0, 1, 1, 1);
+    FACE_COLOR_DUO = ColorA(1, 0, 0, 1);
+    BACKGROUND_IMAGE_COLOR = ColorA(1, 1, 1, 1);
     
     try {
 		mShader = gl::GlslProg( loadResource( RES_PASSTHRU_VERT ), loadResource( RES_BLUR_FRAG ) );
@@ -124,7 +129,9 @@ void GesichtertauschApp::setup() {
     mGui->addParam("TIME_BEFOR_IDLE_DEATH", &TIME_BEFOR_IDLE_DEATH, 0, 10, 0.5);
     mGui->addParam("MIN_LIFETIME_TO_VIEW", &MIN_LIFETIME_TO_VIEW, 0, 10, 1.0);
     mGui->addParam("ENABLE_SHADER", &ENABLE_SHADER, 0, 1, 0);
-//    mGui->addParam("FACE_COLOR_2", &FACE_COLOR_2, 0, 1, 0);
+    mGui->addParam("FACE_COLOR_UNO", &FACE_COLOR_UNO, ColorA(0, 1, 1, 1), SimpleGUI::RGB);
+    mGui->addParam("FACE_COLOR_DUO", &FACE_COLOR_DUO, ColorA(1, 0, 0, 1), SimpleGUI::RGB);
+    mGui->addParam("BACKGROUND_IMAGE_COLOR", &BACKGROUND_IMAGE_COLOR, ColorA(1, 1, 1, 1), SimpleGUI::RGB);
     
     mGui->addSeparator();
     mFaceOut = mGui->addLabel("");
@@ -142,7 +149,6 @@ void GesichtertauschApp::setup() {
     
     mGui->load(getResourcePath(RES_SETTINGS));
     mGui->setEnabled(false);
-    mGui->dump(); 
     
     setFullScreen( FULLSCREEN );
     if (FULLSCREEN) {
@@ -158,20 +164,34 @@ void GesichtertauschApp::setup() {
         case 0:
             mFaceDetection = new FeatureDetectionCinder();
             break;
+#ifdef COMPILE_CAPTURE_OPENCV
         case 1:
             mFaceDetection = new FeatureDetectionOpenCV();
             break;
+#endif
+#ifdef COMPILE_CAPTURE_FIREFLY
+        case 2:
+            mFaceDetection = new FeatureDetectionFireFly();
+            break;
+#endif
     }
 
     mGui->addParam("DETECT_FLAGS",&(mFaceDetection->DETECT_FLAGS), CV_HAAR_DO_CANNY_PRUNING, CV_HAAR_DO_ROUGH_SEARCH, CV_HAAR_DO_CANNY_PRUNING);
     mGui->addParam("DETECT_SCALE_FACTOR",&(mFaceDetection->DETECT_SCALE_FACTOR), 1.1, 5, 1.2);
     mGui->addParam("DETECT_MIN_NEIGHBORS",&(mFaceDetection->DETECT_MIN_NEIGHBORS), 1, 20, 2);
-    mFaceDetection->setup(CAMERA_WIDTH, CAMERA_HEIGHT, DETECTION_WIDTH, DETECTION_HEIGHT);
+    mGui->load(getResourcePath(RES_SETTINGS)); // HACK this is quite stupid, but we have a catch 22 here ...
+    mFaceDetection->setup(CAMERA_WIDTH, 
+                          CAMERA_HEIGHT, 
+                          DETECTION_WIDTH, 
+                          DETECTION_HEIGHT,
+                          0);
+
+    mGui->dump(); 
 }
 
 void GesichtertauschApp::update() {
     double mDeltaTime = getElapsedSeconds() - mTime;
-    mTime = getElapsedSeconds();    
+    mTime = getElapsedSeconds();
     {
         stringstream mStr;
         mStr << "FPS: " << getAverageFps();
@@ -325,7 +345,7 @@ void GesichtertauschApp::draw() {
     }
 
     /* draw the webcam image */
-    gl::color( ColorA( 1, 1, 1, 1) );
+    gl::color( BACKGROUND_IMAGE_COLOR );
     gl::draw( mCameraTexture, Rectf(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT) );
     mCameraTexture.disable();
     
@@ -338,7 +358,7 @@ void GesichtertauschApp::draw() {
     
     /* draw orgiginal faces */
     if (mEntities.size() < 2) {
-        gl::color( ColorA( 0, 1, 1, 1 ) );   
+        gl::color( FACE_COLOR_UNO );   
         mCameraTexture.enableAndBind();
         for( vector<FaceEntity>::const_iterator mIter = mEntities.begin(); mIter != mEntities.end(); ++mIter ) {
             drawEntity(*mIter);
@@ -348,8 +368,7 @@ void GesichtertauschApp::draw() {
     
     /* HACK // swap faces */
     mCameraTexture.enableAndBind();
-    gl::color( ColorA( 1, 0, 0, 1 ) );
-//    gl::color( FACE_COLOR_2 );
+    gl::color( FACE_COLOR_DUO );
     if (mEntities.size() >= 2) {
         const FaceEntity A = mEntities[0];
         const FaceEntity B = mEntities[1];

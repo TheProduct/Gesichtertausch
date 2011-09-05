@@ -31,7 +31,11 @@ const std::string HAARCASCADE[] = {
  *
  */
 
-void FeatureDetectionCinder::setup(int pCaptureWidth, int pCaptureHeight, int pDetectionWidth, int pDetectionHeight) {
+void FeatureDetectionCinder::setup(int pCaptureWidth, 
+                                   int pCaptureHeight, 
+                                   int pDetectionWidth, 
+                                   int pDetectionHeight,
+                                   int pCameraID) {
     mDetectionWidth = pDetectionWidth;
     mDetectionHeight = pDetectionHeight;
     mCapture = Capture( pCaptureWidth, pCaptureHeight );
@@ -72,13 +76,21 @@ void FeatureDetectionCinder::update(gl::Texture& pTexture, vector<Rectf>& pFaces
     }
 }
 
+void FeatureDetectionCinder::dispose() {
+    mCapture.stop();
+}
+
 /*
  *
  * FeatureDetectionOpenCV 
  *
  */
-
-void FeatureDetectionOpenCV::setup(int pCaptureWidth, int pCaptureHeight, int pDetectionWidth, int pDetectionHeightt) {
+#ifdef COMPILE_CAPTURE_OPENCV
+void FeatureDetectionOpenCV::setup(int pCaptureWidth,
+                                   int pCaptureHeight, 
+                                   int pDetectionWidth,
+                                   int pDetectionHeight,
+                                   int pCameraID) {
     mCapture = cvCreateCameraCapture( 0 );
     if(!mCapture) {
         console() << "Capture from CAM " << " didn't work" << endl;
@@ -113,7 +125,7 @@ void FeatureDetectionOpenCV::update(gl::Texture& pTexture, vector<Rectf>& pFaces
     }
 }
 
-void FeatureDetectionOpenCV::detect(    vector<Rectf>& pFaces,
+void FeatureDetectionOpenCV::detect(vector<Rectf>& pFaces,
                                     cv::Mat& img,
                                     cv::CascadeClassifier& cascade, 
                                     double scale)
@@ -141,7 +153,87 @@ void FeatureDetectionOpenCV::detect(    vector<Rectf>& pFaces,
     }
 }
 
+void FeatureDetectionOpenCV::dispose() {
+    cvReleaseCapture(mCapture);
+}
 
+#endif
 
+/*
+ *
+ * FeatureDetectionFireFly 
+ *
+ */
+#ifdef COMPILE_CAPTURE_FIREFLY
+void FeatureDetectionFireFly::setup(int pCaptureWidth, 
+                                    int pCaptureHeight, 
+                                    int pDetectionWidth, 
+                                    int pDetectionHeight,
+                                    int pCameraID) {
+    FlyCapture2::Error error;
+	FlyCapture2::PGRGuid guid;
+	FlyCapture2::BusManager busMgr;
+    
+	mCapture = new FlyCapture2::Camera();
+	rawImage = new FlyCapture2::Image();
+    
+	//Getting the GUID of the cam
+	error = busMgr.GetCameraFromIndex(pCameraID, &guid);
+	if (error != FlyCapture2::PGRERROR_OK)
+	{
+		error.PrintErrorTrace();
+		return -1;
+	}
+    
+	// Connect to a camera
+	error = mCapture->Connect(&guid);
+	error = mCapture->SetVideoModeAndFrameRate(FlyCapture2::VIDEOMODE_640x480Y8, 
+                                               FlyCapture2::FRAMERATE_60);
+    
+	if (pCaptureWidth != 640 && pCaptureHeight != 480) {
+		console() << "### WARNING currently firefly mode only supports resolution of 640x480." << endl;
+		return -1;
+	}
+    
+	if (error != FlyCapture2::PGRERROR_OK)
+	{
+		error.PrintErrorTrace();
+		return -1;
+	}
+    
+	//Starting the capture
+	error = mCapture->StartCapture();
+	if (error != FlyCapture2::PGRERROR_OK)
+	{
+		error.PrintErrorTrace();
+		return -1;
+	}
+    
+	//Get one raw image to be able to calculate the OpenCV window size
+	mCapture->RetrieveBuffer(rawImage);
+    
+	//Setting the window size in OpenCV
+	console() << "+++ camera size is %ix%i", rawImage->GetCols(), rawImage->GetRows() << endl;
+}
 
+void FeatureDetectionFireFly::update(gl::Texture& pTexture, 
+                                     vector<Rectf>& pFaces) {
+    FlyCapture2::Error error;
+    
+	// Start capturing images
+	cam->RetrieveBuffer(rawImage);
+    
+	// Get the raw image dimensions -- don t need this
+	FlyCapture2::PixelFormat pixFormat;
+	unsigned int rows, cols, stride;
+	rawImage->GetDimensions( &rows, &cols, &stride, &pixFormat );
+
+    // update pixels
+    Surface mSurface;
+    // SurfaceT( T *data, int32_t width, int32_t height, int32_t rowBytes, SurfaceChannelOrder channelOrder );
+    // SurfaceT<uint8_t> ----> typedef unsigned char         uint8_t;
+    //pTexture.setFromPixels(rawImage->GetData(), rawImage->GetCols(), rawImage->GetRows());
+    pTexture.update(mSurface);
+}
+#endif
 

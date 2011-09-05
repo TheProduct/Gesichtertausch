@@ -16,6 +16,9 @@
 #include "CinderOpenCv.h"
 #include "opencv2/opencv.hpp"
 
+#ifdef COMPILE_CAPTURE_FIREFLY
+#include "FlyCapture2.h"
+#endif
 
 using namespace ci;
 using namespace ci::app;
@@ -23,15 +26,22 @@ using namespace std;
 
 class FeatureDetection {
 public:
-    virtual void setup(int pCaptureWidth, int pCaptureHeight, int pDetectionWidth, int pDetectionHeight) = 0;
-    virtual void update(gl::Texture& pTexture, vector<Rectf>& pFaces) = 0;
+    virtual void setup(int pCaptureWidth, 
+                       int pCaptureHeight, 
+                       int pDetectionWidth, 
+                       int pDetectionHeight,
+                       int pCameraID) = 0;
+    virtual void update(gl::Texture& pTexture, 
+                        vector<Rectf>& pFaces) = 0;
+    virtual void dispose() = 0;
 
     float DETECT_SCALE_FACTOR;
     int DETECT_MIN_NEIGHBORS;
     int DETECT_FLAGS;
 protected:
     cv::CascadeClassifier	mFaceCascade;
-    void doFeatureDetection(const cv::Mat& pImage, vector<cv::Rect>& pFaces) {
+    void doFeatureDetection(const cv::Mat& pImage, 
+                            vector<cv::Rect>& pFaces) {
         mFaceCascade.detectMultiScale( pImage, 
                                       pFaces, 
                                       DETECT_SCALE_FACTOR,//1.2, 
@@ -60,8 +70,14 @@ protected:
 
 class FeatureDetectionCinder : public FeatureDetection {
 public:
-    void setup(int pCaptureWidth, int pCaptureHeight, int pDetectionWidth, int pDetectionHeight);
-    void update(gl::Texture& pTexture, vector<Rectf>& pFaces);
+    void setup(int pCaptureWidth, 
+               int pCaptureHeight, 
+               int pDetectionWidth, 
+               int pDetectionHeight,
+               int pCameraID);
+    void update(gl::Texture& pTexture, 
+                vector<Rectf>& pFaces);
+    void dispose();
     
 private:
     Capture                 mCapture;
@@ -70,10 +86,17 @@ private:
     int                     mDetectionHeight;
 };
 
+#ifdef COMPILE_CAPTURE_OPENCV
 class FeatureDetectionOpenCV : public FeatureDetection {
 public:
-    void setup(int pCaptureWidth, int pCaptureHeight, int pDetectionWidth, int pDetectionHeight);
-    void update(gl::Texture& pTexture, vector<Rectf>& pFaces);
+    void setup(int pCaptureWidth, 
+               int pCaptureHeight, 
+               int pDetectionWidth, 
+               int pDetectionHeight,
+               int pCameraID);
+    void update(gl::Texture& pTexture, 
+                vector<Rectf>& pFaces);
+    void dispose();
     
 private:
     void detect(    vector<Rectf>& pFaces,
@@ -83,5 +106,25 @@ private:
     
     CvCapture*              mCapture;
 };
+#endif
+
+
+#ifdef COMPILE_CAPTURE_FIREFLY
+class FeatureDetectionFireFly : public FeatureDetection {
+public:
+    void setup(int pCaptureWidth, 
+               int pCaptureHeight, 
+               int pDetectionWidth, 
+               int pDetectionHeight,
+               int pCameraID);
+    void update(gl::Texture& pTexture, 
+                vector<Rectf>& pFaces);
+    void dispose();
+    
+private:
+    FlyCapture2::Camera*    mCapture;
+	FlyCapture2::Image*     rawImage;
+};
+#endif
 
 #endif

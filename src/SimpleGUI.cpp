@@ -56,7 +56,12 @@ SimpleGUI::SimpleGUI(App* app) {
 }
 	
 void SimpleGUI::init(App* app) {	
-	textFont = Font(loadResource("pf_tempesta_seven.ttf"), 8);
+    try {
+        textFont = Font(loadResource("pf_tempesta_seven.ttf"), 8);
+    }
+    catch(ResourceLoadExc pException) {
+        console() << "### problem loading SimpleGUIs font. is 'pf_tempesta_seven.ttf' included as a resource?" << std::endl;
+    }
 	//textFont = Font("Arial", 12);
 	selectedControl = NULL;
 	cbMouseDown = app->registerMouseDown( this, &SimpleGUI::onMouseDown );

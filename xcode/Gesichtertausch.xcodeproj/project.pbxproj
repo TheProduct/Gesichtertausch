@@ -19,8 +19,6 @@
 		5323E6B60EAFCA7E003A9687 /* QTKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5323E6B50EAFCA7E003A9687 /* QTKit.framework */; };
 		53E3CDFC0E86099300238D2B /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 53E3CDFB0E86099300238D2B /* Carbon.framework */; };
 		8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
-		9527E29314065D6100601156 /* haarcascade_eye.xml in Resources */ = {isa = PBXBuildFile; fileRef = 9527E29114065D6100601156 /* haarcascade_eye.xml */; };
-		9527E29414065D6100601156 /* haarcascade_frontalface_alt.xml in Resources */ = {isa = PBXBuildFile; fileRef = 9527E29214065D6100601156 /* haarcascade_frontalface_alt.xml */; };
 		9527E29614065DC800601156 /* pf_tempesta_seven.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 9527E29514065DC800601156 /* pf_tempesta_seven.ttf */; };
 		9527E29C14065E2B00601156 /* SimpleGUI.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9527E29B14065E2B00601156 /* SimpleGUI.cpp */; };
 		9527E2A81406605600601156 /* settings.txt in Resources */ = {isa = PBXBuildFile; fileRef = 9527E2A71406605600601156 /* settings.txt */; };
@@ -28,6 +26,8 @@
 		95993834140C1A97004E6F2E /* haarcascade_frontalface_default.xml in Resources */ = {isa = PBXBuildFile; fileRef = 95993833140C1A97004E6F2E /* haarcascade_frontalface_default.xml */; };
 		95993837140C1B8B004E6F2E /* haarcascade_frontalface_alt_tree.xml in Resources */ = {isa = PBXBuildFile; fileRef = 95993835140C1B8B004E6F2E /* haarcascade_frontalface_alt_tree.xml */; };
 		95993838140C1B8B004E6F2E /* haarcascade_frontalface_alt2.xml in Resources */ = {isa = PBXBuildFile; fileRef = 95993836140C1B8B004E6F2E /* haarcascade_frontalface_alt2.xml */; };
+		959C64301410D72800EE08F9 /* haarcascade_frontalface_alt.xml in Resources */ = {isa = PBXBuildFile; fileRef = 959C642F1410D72800EE08F9 /* haarcascade_frontalface_alt.xml */; };
+		959C64351410D78B00EE08F9 /* haarcascade_eye.xml in Resources */ = {isa = PBXBuildFile; fileRef = 959C64341410D78B00EE08F9 /* haarcascade_eye.xml */; };
 		95C6A792140E5F560059EB08 /* posterizer.fs in Resources */ = {isa = PBXBuildFile; fileRef = 95C6A791140E5F560059EB08 /* posterizer.fs */; };
 		95C6A7A2140EA3380059EB08 /* passThru.vs in Resources */ = {isa = PBXBuildFile; fileRef = 95C6A7A1140EA3380059EB08 /* passThru.vs */; };
 		95F316B514066FF4003528B9 /* Util.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 95F316B414066FF4003528B9 /* Util.cpp */; };
@@ -52,8 +52,6 @@
 		53E3CDFB0E86099300238D2B /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = /System/Library/Frameworks/Carbon.framework; sourceTree = "<absolute>"; };
 		8D1107310486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		8D1107320486CEB800E47090 /* Gesichtertausch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Gesichtertausch.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		9527E29114065D6100601156 /* haarcascade_eye.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = haarcascade_eye.xml; path = ../resources/haarcascade_eye.xml; sourceTree = "<group>"; };
-		9527E29214065D6100601156 /* haarcascade_frontalface_alt.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = haarcascade_frontalface_alt.xml; path = ../resources/haarcascade_frontalface_alt.xml; sourceTree = "<group>"; };
 		9527E29514065DC800601156 /* pf_tempesta_seven.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = pf_tempesta_seven.ttf; path = ../resources/pf_tempesta_seven.ttf; sourceTree = "<group>"; };
 		9527E29B14065E2B00601156 /* SimpleGUI.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SimpleGUI.cpp; path = ../src/SimpleGUI.cpp; sourceTree = "<group>"; };
 		9527E29D14065E3300601156 /* SimpleGUI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SimpleGUI.h; path = ../include/SimpleGUI.h; sourceTree = "<group>"; };
@@ -63,6 +61,8 @@
 		95993833140C1A97004E6F2E /* haarcascade_frontalface_default.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = haarcascade_frontalface_default.xml; path = ../../../../../../../../coding/opencv/cvs/opencv/data/haarcascades/haarcascade_frontalface_default.xml; sourceTree = "<group>"; };
 		95993835140C1B8B004E6F2E /* haarcascade_frontalface_alt_tree.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = haarcascade_frontalface_alt_tree.xml; path = ../../../../../../../../coding/opencv/cvs/opencv/data/haarcascades/haarcascade_frontalface_alt_tree.xml; sourceTree = "<group>"; };
 		95993836140C1B8B004E6F2E /* haarcascade_frontalface_alt2.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = haarcascade_frontalface_alt2.xml; path = ../../../../../../../../coding/opencv/cvs/opencv/data/haarcascades/haarcascade_frontalface_alt2.xml; sourceTree = "<group>"; };
+		959C642F1410D72800EE08F9 /* haarcascade_frontalface_alt.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = haarcascade_frontalface_alt.xml; path = ../../../../../../../../coding/opencv/cvs/opencv/data/haarcascades/haarcascade_frontalface_alt.xml; sourceTree = "<group>"; };
+		959C64341410D78B00EE08F9 /* haarcascade_eye.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = haarcascade_eye.xml; sourceTree = "<group>"; };
 		95C6A790140E52BA0059EB08 /* Resources.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Resources.h; path = ../include/Resources.h; sourceTree = "<group>"; };
 		95C6A791140E5F560059EB08 /* posterizer.fs */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = posterizer.fs; path = ../resources/shader/posterizer.fs; sourceTree = "<group>"; };
 		95C6A7A1140EA3380059EB08 /* passThru.vs */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = passThru.vs; path = ../resources/shader/passThru.vs; sourceTree = "<group>"; };
@@ -161,15 +161,15 @@
 		29B97317FDCFA39411CA2CEA /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				959C64341410D78B00EE08F9 /* haarcascade_eye.xml */,
 				95C6A7A1140EA3380059EB08 /* passThru.vs */,
 				95C6A791140E5F560059EB08 /* posterizer.fs */,
-				9527E29214065D6100601156 /* haarcascade_frontalface_alt.xml */,
+				959C642F1410D72800EE08F9 /* haarcascade_frontalface_alt.xml */,
 				95993836140C1B8B004E6F2E /* haarcascade_frontalface_alt2.xml */,
 				95993835140C1B8B004E6F2E /* haarcascade_frontalface_alt_tree.xml */,
 				95993833140C1A97004E6F2E /* haarcascade_frontalface_default.xml */,
 				9527E2A71406605600601156 /* settings.txt */,
 				9527E29514065DC800601156 /* pf_tempesta_seven.ttf */,
-				9527E29114065D6100601156 /* haarcascade_eye.xml */,
 				8D1107310486CEB800E47090 /* Info.plist */,
 				00CCAF14116A9FEE008396D5 /* CinderApp.icns */,
 			);
@@ -269,8 +269,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				00CCAF15116A9FEE008396D5 /* CinderApp.icns in Resources */,
-				9527E29314065D6100601156 /* haarcascade_eye.xml in Resources */,
-				9527E29414065D6100601156 /* haarcascade_frontalface_alt.xml in Resources */,
 				9527E29614065DC800601156 /* pf_tempesta_seven.ttf in Resources */,
 				9527E2A81406605600601156 /* settings.txt in Resources */,
 				95993834140C1A97004E6F2E /* haarcascade_frontalface_default.xml in Resources */,
@@ -278,6 +276,8 @@
 				95993838140C1B8B004E6F2E /* haarcascade_frontalface_alt2.xml in Resources */,
 				95C6A792140E5F560059EB08 /* posterizer.fs in Resources */,
 				95C6A7A2140EA3380059EB08 /* passThru.vs in Resources */,
+				959C64301410D72800EE08F9 /* haarcascade_frontalface_alt.xml in Resources */,
+				959C64351410D78B00EE08F9 /* haarcascade_eye.xml in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -357,6 +357,8 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ARCHS = i386;
 				CINDER_PATH = /Users/dennis/dev/cinder;
+				COMPILE_CAPTURE_FIREFLY = 0;
+				COMPILE_CAPTURE_OPENCV = 1;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = "\"$(CINDER_PATH)/boost\"";
@@ -372,6 +374,8 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ARCHS = i386;
 				CINDER_PATH = /Users/dennis/dev/cinder;
+				COMPILE_CAPTURE_FIREFLY = 0;
+				COMPILE_CAPTURE_OPENCV = 1;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = "\"$(CINDER_PATH)/boost\"";
