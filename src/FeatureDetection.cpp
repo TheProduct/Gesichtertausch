@@ -170,70 +170,119 @@ void FeatureDetectionFireFly::setup(int pCaptureWidth,
                                     int pDetectionWidth, 
                                     int pDetectionHeight,
                                     int pCameraID) {
-    FlyCapture2::Error error;
-	FlyCapture2::PGRGuid guid;
-	FlyCapture2::BusManager busMgr;
     
-	mCapture = new FlyCapture2::Camera();
-	rawImage = new FlyCapture2::Image();
+    mDetectionWidth = pDetectionWidth;
+    mDetectionHeight = pDetectionHeight;
+    mFaceCascade.load( App::getResourcePath( HAARCASCADE[0] ) );
+
+    ///////////////////////////////////
     
-	//Getting the GUID of the cam
-	error = busMgr.GetCameraFromIndex(pCameraID, &guid);
-	if (error != FlyCapture2::PGRERROR_OK)
-	{
-		error.PrintErrorTrace();
-		return -1;
-	}
     
-	// Connect to a camera
-	error = mCapture->Connect(&guid);
-	error = mCapture->SetVideoModeAndFrameRate(FlyCapture2::VIDEOMODE_640x480Y8, 
-                                               FlyCapture2::FRAMERATE_60);
+    dc1394camera_list_t * list;   
+    dc1394_t * d;
     
-	if (pCaptureWidth != 640 && pCaptureHeight != 480) {
-		console() << "### WARNING currently firefly mode only supports resolution of 640x480." << endl;
-		return -1;
-	}
+    d = dc1394_new ();
+    err = dc1394_camera_enumerate (d, &list);
+    if (list->num == 0) {
+        console() << "### no camera found!" << endl;
+    }
     
-	if (error != FlyCapture2::PGRERROR_OK)
-	{
-		error.PrintErrorTrace();
-		return -1;
-	}
+    camera = dc1394_camera_new (d, list->ids[0].guid);
+    if (!camera) {
+        console() << "### failed to initialize camera with guid %llx" << list->ids[0].guid << endl;
+    }
+    dc1394_camera_free_list (list);
+    console() << "+++ camera (GUID): " << camera->vendor << "(" << camera->guid << ")" << endl;
     
-	//Starting the capture
-	error = mCapture->StartCapture();
-	if (error != FlyCapture2::PGRERROR_OK)
-	{
-		error.PrintErrorTrace();
-		return -1;
-	}
+    ////////////
     
-	//Get one raw image to be able to calculate the OpenCV window size
-	mCapture->RetrieveBuffer(rawImage);
+        err=dc1394_video_set_operation_mode(camera, DC1394_OPERATION_MODE_1394B);
+        err=dc1394_video_set_iso_speed(camera, DC1394_ISO_SPEED_400);
+        err=dc1394_video_set_mode(camera, DC1394_VIDEO_MODE_640x480_MONO8);
+        err=dc1394_video_set_framerate(camera, DC1394_FRAMERATE_30);
+        err=dc1394_capture_setup(camera, 2, DC1394_CAPTURE_FLAGS_DEFAULT);
     
-	//Setting the window size in OpenCV
-	console() << "+++ camera size is %ix%i", rawImage->GetCols(), rawImage->GetRows() << endl;
+    ////////////
+    
+    err=dc1394_video_set_transmission(camera, DC1394_ON);
+    
+    dc1394video_frame_t *frame=NULL;
+    console() << "+++ capture ..." << endl;
+    err = dc1394_capture_dequeue(camera, DC1394_CAPTURE_POLICY_WAIT, &frame);
+    if (frame) {
+        console() << "+++ capture state: " << (err == 0 ? "OK" : "BAD") << endl;
+        console() << "+++ dimensions   : " << frame->size[0] << ", " << frame->size[1] << endl;
+        console() << "+++ color coding : " << frame->color_coding << endl;
+        console() << "+++ data depth   : " << frame->data_depth << endl;
+        console() << "+++ stride       : " << frame->stride << endl;
+        console() << "+++ video_mode   : " << frame->video_mode << endl; // (90 == FORMAT7_2)
+        console() << "+++ total_bytes  : " << frame->total_bytes << endl;
+        console() << "+++ packet_size  : " << frame->packet_size << endl;
+        console() << "+++ packets_per_frame : " << frame->packets_per_frame << endl;
+        err = dc1394_capture_enqueue(camera, frame);
+    }
 }
 
 void FeatureDetectionFireFly::update(gl::Texture& pTexture, 
                                      vector<Rectf>& pFaces) {
-    FlyCapture2::Error error;
-    
-	// Start capturing images
-	cam->RetrieveBuffer(rawImage);
-    
-	// Get the raw image dimensions -- don t need this
-	FlyCapture2::PixelFormat pixFormat;
-	unsigned int rows, cols, stride;
-	rawImage->GetDimensions( &rows, &cols, &stride, &pixFormat );
-
-    // update pixels
-    Surface mSurface;
-    // SurfaceT( T *data, int32_t width, int32_t height, int32_t rowBytes, SurfaceChannelOrder channelOrder );
-    // SurfaceT<uint8_t> ----> typedef unsigned char         uint8_t;
-    //pTexture.setFromPixels(rawImage->GetData(), rawImage->GetCols(), rawImage->GetRows());
-    pTexture.update(mSurface);
+    dc1394video_frame_t *frame = NULL;
+    err = dc1394_capture_dequeue(camera, DC1394_CAPTURE_POLICY_POLL, &frame);
+    if (frame) {    
+        unsigned char * mImageData;
+        const unsigned int mSize = frame->size[0] * frame->size[1] * 4;
+        mImageData = new unsigned char [mSize];
+        for (int i=0; i < mSize; i+=4) {
+            mImageData[i+0] = frame->image[i / 4];
+            mImageData[i+1] = frame->image[i / 4];
+            mImageData[i+2] = frame->image[i / 4];
+            mImageData[i+3] = 255;
+        }
+        
+        /* update texture */
+        Surface mSurface = Surface(mImageData, 
+                                   frame->size[0], 
+                                   frame->size[1], 
+                                   frame->size[0] * 4, 
+                                   SurfaceChannelOrder::RGBA);
+        if (pTexture) {
+            pTexture.update(mSurface);
+        }
+        
+        /* update faces */
+        // create a grayscale copy of the input image
+        cv::Mat grayCameraImage( toOcv( mSurface, CV_8UC1 ) );
+        
+        /* scale image */
+        cv::Mat mScaledImage( mDetectionHeight, mDetectionWidth, CV_8UC1 );
+        cv::resize( grayCameraImage, mScaledImage, mScaledImage.size(), 0, 0, cv::INTER_LINEAR );
+        
+        // equalize the histogram
+        bool equalize_the_histogram = true;
+        if (equalize_the_histogram) {
+            cv::equalizeHist( mScaledImage, mScaledImage );
+        }
+        
+        // clear out the previously deteced faces & eyes
+        pFaces.clear();
+        
+        // detect the faces and iterate them, appending them to mFaces
+        vector<cv::Rect> mFaces;
+        doFeatureDetection(mScaledImage, mFaces);
+        for( vector<cv::Rect>::const_iterator faceIter = mFaces.begin(); faceIter != mFaces.end(); ++faceIter ) {
+            pFaces.push_back( fromOcv( *faceIter ) );
+        }        
+        
+        err = dc1394_capture_enqueue(camera, frame);
+        delete [] mImageData;
+    }
 }
+
+void FeatureDetectionFireFly::dispose() {
+    dc1394_video_set_transmission(camera, DC1394_OFF);
+    dc1394_capture_stop(camera);
+    dc1394_reset_bus (camera);
+    dc1394_camera_free(camera);
+}
+
 #endif
 

@@ -5,3 +5,4 @@
  *
  */
 
+#define COMPILE_CAPTURE_FIREFLY

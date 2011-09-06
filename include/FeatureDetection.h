@@ -5,9 +5,11 @@
  *
  */
 
+
 #ifndef Gesichtertausch_FeatureDetection_h
 #define Gesichtertausch_FeatureDetection_h
 
+#include "Defines.h"
 #include "cinder/app/AppBasic.h"
 #include "cinder/gl/gl.h"
 #include "cinder/gl/Texture.h"
@@ -17,7 +19,8 @@
 #include "opencv2/opencv.hpp"
 
 #ifdef COMPILE_CAPTURE_FIREFLY
-#include "FlyCapture2.h"
+#include <dc1394/dc1394.h>
+#include <dc1394/capture.h>
 #endif
 
 using namespace ci;
@@ -122,8 +125,10 @@ public:
     void dispose();
     
 private:
-    FlyCapture2::Camera*    mCapture;
-	FlyCapture2::Image*     rawImage;
+    int                     mDetectionWidth;
+    int                     mDetectionHeight;
+    dc1394camera_t          *camera;
+    dc1394error_t           err;
 };
 #endif
 

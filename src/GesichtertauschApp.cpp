@@ -5,6 +5,7 @@
  *
  */
 
+#include "Defines.h"
 #include "Resources.h"
 
 #include "cinder/app/AppBasic.h"
@@ -164,16 +165,20 @@ void GesichtertauschApp::setup() {
         case 0:
             mFaceDetection = new FeatureDetectionCinder();
             break;
-#ifdef COMPILE_CAPTURE_OPENCV
-        case 1:
-            mFaceDetection = new FeatureDetectionOpenCV();
-            break;
-#endif
 #ifdef COMPILE_CAPTURE_FIREFLY
-        case 2:
+        case 1:
             mFaceDetection = new FeatureDetectionFireFly();
             break;
 #endif
+#ifdef COMPILE_CAPTURE_OPENCV
+        case 2:
+            mFaceDetection = new FeatureDetectionOpenCV();
+            break;
+#endif
+        default:
+            console() << "### choosing default tracking method." << endl;
+            mFaceDetection = new FeatureDetectionCinder();
+            break;
     }
 
     mGui->addParam("DETECT_FLAGS",&(mFaceDetection->DETECT_FLAGS), CV_HAAR_DO_CANNY_PRUNING, CV_HAAR_DO_ROUGH_SEARCH, CV_HAAR_DO_CANNY_PRUNING);
@@ -335,7 +340,7 @@ void GesichtertauschApp::draw() {
     // TODO make this more opt'd
     if (ENABLE_SHADER) {
         mShader.bind();
-        const int STEPS = 16;
+        const int STEPS = 8;
         float mThresholds[STEPS];// = {0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0};
         for (int i=0; i < STEPS; ++i) {
             mThresholds[i] = float(i) / float(STEPS - 1);

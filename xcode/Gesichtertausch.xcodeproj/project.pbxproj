@@ -30,7 +30,6 @@
 		959C64351410D78B00EE08F9 /* haarcascade_eye.xml in Resources */ = {isa = PBXBuildFile; fileRef = 959C64341410D78B00EE08F9 /* haarcascade_eye.xml */; };
 		95C6A792140E5F560059EB08 /* posterizer.fs in Resources */ = {isa = PBXBuildFile; fileRef = 95C6A791140E5F560059EB08 /* posterizer.fs */; };
 		95C6A7A2140EA3380059EB08 /* passThru.vs in Resources */ = {isa = PBXBuildFile; fileRef = 95C6A7A1140EA3380059EB08 /* passThru.vs */; };
-		95F316B514066FF4003528B9 /* Util.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 95F316B414066FF4003528B9 /* Util.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -63,10 +62,10 @@
 		95993836140C1B8B004E6F2E /* haarcascade_frontalface_alt2.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = haarcascade_frontalface_alt2.xml; path = ../../../../../../../../coding/opencv/cvs/opencv/data/haarcascades/haarcascade_frontalface_alt2.xml; sourceTree = "<group>"; };
 		959C642F1410D72800EE08F9 /* haarcascade_frontalface_alt.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = haarcascade_frontalface_alt.xml; path = ../../../../../../../../coding/opencv/cvs/opencv/data/haarcascades/haarcascade_frontalface_alt.xml; sourceTree = "<group>"; };
 		959C64341410D78B00EE08F9 /* haarcascade_eye.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = haarcascade_eye.xml; sourceTree = "<group>"; };
+		95AB42C4141610DF00923EC1 /* Defines.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Defines.h; path = ../include/Defines.h; sourceTree = "<group>"; };
 		95C6A790140E52BA0059EB08 /* Resources.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Resources.h; path = ../include/Resources.h; sourceTree = "<group>"; };
 		95C6A791140E5F560059EB08 /* posterizer.fs */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = posterizer.fs; path = ../resources/shader/posterizer.fs; sourceTree = "<group>"; };
 		95C6A7A1140EA3380059EB08 /* passThru.vs */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = passThru.vs; path = ../resources/shader/passThru.vs; sourceTree = "<group>"; };
-		95F316B414066FF4003528B9 /* Util.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Util.cpp; path = ../src/Util.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -94,7 +93,6 @@
 			isa = PBXGroup;
 			children = (
 				00BAE6590E7ED9C10018A608 /* GesichtertauschApp.cpp */,
-				95F316B414066FF4003528B9 /* Util.cpp */,
 				9599382D140B91EF004E6F2E /* FeatureDetection.cpp */,
 			);
 			name = Source;
@@ -154,6 +152,7 @@
 				95C6A790140E52BA0059EB08 /* Resources.h */,
 				32CA4F630368D1EE00C91783 /* Gesichtertausch_Prefix.pch */,
 				95993831140B9923004E6F2E /* FeatureDetection.h */,
+				95AB42C4141610DF00923EC1 /* Defines.h */,
 			);
 			name = Headers;
 			sourceTree = "<group>";
@@ -290,7 +289,6 @@
 			files = (
 				00BAE65A0E7ED9C10018A608 /* GesichtertauschApp.cpp in Sources */,
 				9527E29C14065E2B00601156 /* SimpleGUI.cpp in Sources */,
-				95F316B514066FF4003528B9 /* Util.cpp in Sources */,
 				9599382E140B91EF004E6F2E /* FeatureDetection.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -317,6 +315,7 @@
 					"\"$(CINDER_PATH)/blocks/opencv/lib/macosx/libopencv_core.a\"",
 					"\"$(CINDER_PATH)/blocks/opencv/lib/macosx/libopencv_highgui.dylib\"",
 					"\"$(CINDER_PATH)/blocks/opencv/lib/macosx/libopencv_objdetect.a\"",
+					/opt/local/lib/libdc1394.dylib,
 				);
 				PRODUCT_NAME = Gesichtertausch;
 				WRAPPER_EXTENSION = app;
@@ -344,6 +343,7 @@
 					"\"$(CINDER_PATH)/blocks/opencv/lib/macosx/libopencv_core.a\"",
 					"\"$(CINDER_PATH)/blocks/opencv/lib/macosx/libopencv_objdetect.a\"",
 					"\"$(CINDER_PATH)/blocks/opencv/lib/macosx/libopencv_highgui.dylib\"",
+					/opt/local/lib/libdc1394.dylib,
 				);
 				PRODUCT_NAME = Gesichtertausch;
 				STRIP_INSTALLED_PRODUCT = YES;
@@ -361,7 +361,10 @@
 				COMPILE_CAPTURE_OPENCV = 1;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				HEADER_SEARCH_PATHS = "\"$(CINDER_PATH)/boost\"";
+				HEADER_SEARCH_PATHS = (
+					/opt/local/include,
+					"\"$(CINDER_PATH)/boost\"",
+				);
 				MACOSX_DEPLOYMENT_TARGET = 10.5;
 				SDKROOT = macosx;
 				USER_HEADER_SEARCH_PATHS = "\"$(CINDER_PATH)/include\" \"$(CINDER_PATH)/blocks/opencv/include\" ../include";
@@ -378,7 +381,10 @@
 				COMPILE_CAPTURE_OPENCV = 1;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				HEADER_SEARCH_PATHS = "\"$(CINDER_PATH)/boost\"";
+				HEADER_SEARCH_PATHS = (
+					/opt/local/include,
+					"\"$(CINDER_PATH)/boost\"",
+				);
 				MACOSX_DEPLOYMENT_TARGET = 10.5;
 				SDKROOT = macosx;
 				USER_HEADER_SEARCH_PATHS = "\"$(CINDER_PATH)/include\" \"$(CINDER_PATH)/blocks/opencv/include\" ../include";
