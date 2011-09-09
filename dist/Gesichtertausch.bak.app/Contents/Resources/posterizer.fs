@@ -1,5 +1,5 @@
 uniform sampler2D tex0;
-const int THRESHOLD_SIZE = 8;
+const int THRESHOLD_SIZE = 16;
 uniform float thresholds[THRESHOLD_SIZE];
 
 void main()

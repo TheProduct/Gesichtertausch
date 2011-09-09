@@ -313,7 +313,6 @@
 					"\"$(CINDER_PATH)/lib/libcinder_d.a\"",
 					"\"$(CINDER_PATH)/blocks/opencv/lib/macosx/libopencv_imgproc.a\"",
 					"\"$(CINDER_PATH)/blocks/opencv/lib/macosx/libopencv_core.a\"",
-					"\"$(CINDER_PATH)/blocks/opencv/lib/macosx/libopencv_highgui.dylib\"",
 					"\"$(CINDER_PATH)/blocks/opencv/lib/macosx/libopencv_objdetect.a\"",
 					/opt/local/lib/libdc1394.dylib,
 				);
@@ -340,9 +339,8 @@
 				OTHER_LDFLAGS = (
 					"\"$(CINDER_PATH)/lib/libcinder.a\"",
 					"\"$(CINDER_PATH)/blocks/opencv/lib/macosx/libopencv_imgproc.a\"",
-					"\"$(CINDER_PATH)/blocks/opencv/lib/macosx/libopencv_core.a\"",
 					"\"$(CINDER_PATH)/blocks/opencv/lib/macosx/libopencv_objdetect.a\"",
-					"\"$(CINDER_PATH)/blocks/opencv/lib/macosx/libopencv_highgui.dylib\"",
+					"\"$(CINDER_PATH)/blocks/opencv/lib/macosx/libopencv_core.a\"",
 					/opt/local/lib/libdc1394.dylib,
 				);
 				PRODUCT_NAME = Gesichtertausch;

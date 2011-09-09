@@ -36,11 +36,11 @@
 	<string>0410</string>
 	<key>DTXcodeBuild</key>
 	<string>4B110</string>
-	<key>LSUIPresentationMode</key>
-	<integer>4</integer>
 	<key>NSMainNibFile</key>
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
+	<key>LSUIPresentationMode</key>
+	<integer>4</integer>
 </dict>
 </plist>

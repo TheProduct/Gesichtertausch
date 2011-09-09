@@ -1,13 +1,12 @@
 Gesichtertausch
 ==
 
-Necessities
---
+to run this project you currently need to install 'opencv' and 'libdc1394' with macports.
 
-to successfully compile the project you need to …
+   1. install macports [ http://www.macports.org/ ]
+   2. run 'sudo port install opencv' in the terminal
+   3. run 'sudo port install libdc1394 +universal' in the terminal
 
-* adjust CINDER_PATH
-(* install SimpleGUI) -- included as source code
-* install opencv block (version2.2)
-* install Fire Fly SDK
+to successfully compile the project you additionally need to …
 
+   1. adjust the absolute CINDER_PATH in XCode
