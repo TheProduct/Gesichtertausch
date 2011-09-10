@@ -56,7 +56,7 @@ private:
         }	
     };
 
-    void drawEntity(const FaceEntity& pEntity);
+    void drawEntity(const FaceEntity& pEntity, const ColorA& pColor);
     
     FeatureDetection*       mFaceDetection;
     gl::Texture             mCameraTexture;
@@ -86,12 +86,14 @@ private:
     ColorA                  FACE_COLOR_UNO;
     ColorA                  FACE_COLOR_DUO;
     ColorA                  BACKGROUND_IMAGE_COLOR;
+    float                   FACE_BORDER_SCALE;
+    float                   FACE_FADE_BORDER_SCALE;
+
         
     /* output */
     LabelControl*           mFaceOut;
     LabelControl*           mFPSOut;
-    
-    
+        
     /* shader */
     gl::GlslProg            mShader;
 };
@@ -104,6 +106,7 @@ void GesichtertauschApp::setup() {
     FACE_COLOR_DUO = ColorA(1, 0, 0, 1);
     BACKGROUND_IMAGE_COLOR = ColorA(1, 1, 1, 1);
     
+    /* shader */
     try {
 		mShader = gl::GlslProg( loadResource( RES_PASSTHRU_VERT ), loadResource( RES_BLUR_FRAG ) );
 	}
@@ -134,6 +137,9 @@ void GesichtertauschApp::setup() {
     mGui->addParam("FACE_COLOR_UNO", &FACE_COLOR_UNO, ColorA(0, 1, 1, 1), SimpleGUI::RGB);
     mGui->addParam("FACE_COLOR_DUO", &FACE_COLOR_DUO, ColorA(1, 0, 0, 1), SimpleGUI::RGB);
     mGui->addParam("BACKGROUND_IMAGE_COLOR", &BACKGROUND_IMAGE_COLOR, ColorA(1, 1, 1, 1), SimpleGUI::RGB);
+    mGui->addParam("BACKGROUND_IMAGE_COLOR", &BACKGROUND_IMAGE_COLOR, ColorA(1, 1, 1, 1), SimpleGUI::RGB);
+    mGui->addParam("FACE_BORDER_SCALE", &FACE_BORDER_SCALE, 0, 3, 0.7);
+    mGui->addParam("FACE_FADE_BORDER_SCALE", &FACE_FADE_BORDER_SCALE, 1, 2, 1.4);
     
     mGui->addSeparator();
     mFaceOut = mGui->addLabel("");
@@ -191,7 +197,6 @@ void GesichtertauschApp::setup() {
                           DETECTION_WIDTH, 
                           DETECTION_HEIGHT,
                           0);
-
     mGui->dump(); 
 }
 
@@ -364,17 +369,17 @@ void GesichtertauschApp::draw() {
     
     /* draw orgiginal faces */
     if (mEntities.size() < 2) {
-        gl::color( FACE_COLOR_UNO );   
+        gl::enableAlphaBlending();
         mCameraTexture.enableAndBind();
         for( vector<FaceEntity>::const_iterator mIter = mEntities.begin(); mIter != mEntities.end(); ++mIter ) {
-            drawEntity(*mIter);
+            drawEntity(*mIter, FACE_COLOR_UNO);
         }    
         mCameraTexture.disable();
+        gl::disableAlphaBlending();
     }
     
     /* HACK // swap faces */
     mCameraTexture.enableAndBind();
-    gl::color( FACE_COLOR_DUO );
     if (mEntities.size() >= 2) {
         const FaceEntity A = mEntities[0];
         const FaceEntity B = mEntities[1];
@@ -391,8 +396,8 @@ void GesichtertauschApp::draw() {
             mEntityA.ID = A.ID;
             mEntityB.ID = B.ID;
             
-            drawEntity(mEntityA);
-            drawEntity(mEntityB);
+            drawEntity(mEntityA, FACE_COLOR_DUO);
+            drawEntity(mEntityB, FACE_COLOR_DUO);
         }
     }
 
@@ -420,10 +425,11 @@ void GesichtertauschApp::draw() {
     mGui->draw();
 }
 
-void GesichtertauschApp::drawEntity(const FaceEntity& mEntity) {
+void GesichtertauschApp::drawEntity(const FaceEntity& mEntity, const ColorA& pColor) {
     /* only display entities with a certain lifetime */
     if (mEntity.visible) {
         if (!ENABLE_SHADER) {
+            gl::color( pColor );
             Vec2f mLower = Vec2f(mEntity.slice.x1, mEntity.slice.y1);
             Vec2f mUpper = Vec2f(mEntity.slice.x2, mEntity.slice.y2);
             glBegin(GL_POLYGON);
@@ -437,22 +443,56 @@ void GesichtertauschApp::drawEntity(const FaceEntity& mEntity) {
             glVertex2f(mEntity.border.x1, mEntity.border.y2);
             glEnd();
         } else {
-            
             Vec2f mCenter = mEntity.border.getCenter();
             float mRadius = mEntity.border.getWidth() / 2.0; 
 
             Vec2f mTexCenter = mEntity.slice.getCenter();
             float mTexRadius = mEntity.slice.getWidth() / 2.0;
 
-            glBegin(GL_POLYGON);
+            gl::color( pColor );
+            glBegin(GL_TRIANGLE_FAN);
+            glTexCoord2f(mTexCenter.x, mTexCenter.y);
+            glVertex2f(mCenter.x, mCenter.y);
             for (float r=0; r<M_PI * 2.0;r += (M_PI * 2.0) / 36.0) {
                 Vec2f mTexVertex = Vec2f(sin(r), cos(r)); 
-                mTexVertex *= mTexRadius;
+                mTexVertex *= mTexRadius * FACE_BORDER_SCALE;
                 glTexCoord2f(mTexVertex.x + mTexCenter.x, mTexVertex.y + mTexCenter.y);
-
+                
                 Vec2f mVertex = Vec2f(sin(r), cos(r)); 
-                mVertex *= mRadius;
+                mVertex *= mRadius * FACE_BORDER_SCALE;
                 glVertex2f(mVertex.x + mCenter.x, mVertex.y + mCenter.y);
+            }
+            glEnd();
+
+//            glBegin(GL_POLYGON);
+//            for (float r=0; r<M_PI * 2.0;r += (M_PI * 2.0) / 36.0) {
+//                Vec2f mTexVertex = Vec2f(sin(r), cos(r)); 
+//                mTexVertex *= mTexRadius;
+//                glTexCoord2f(mTexVertex.x + mTexCenter.x, mTexVertex.y + mTexCenter.y);
+//                
+//                Vec2f mVertex = Vec2f(sin(r), cos(r)); 
+//                mVertex *= mRadius;
+//                glVertex2f(mVertex.x + mCenter.x, mVertex.y + mCenter.y);
+//            }
+//            glEnd();
+            
+            glBegin(GL_QUAD_STRIP);
+            for (float r=0; r<M_PI * 2.0;r += (M_PI * 2.0) / 36.0) {
+                Vec2f mTexVertex = Vec2f(sin(r), cos(r)); 
+                mTexVertex *= mTexRadius * FACE_BORDER_SCALE;
+                Vec2f mVertex = Vec2f(sin(r), cos(r)); 
+                mVertex *= mRadius * FACE_BORDER_SCALE;
+                
+                glColor4f( pColor.r, pColor.g, pColor.b, pColor.a ); 
+                glTexCoord2f(mTexVertex.x + mTexCenter.x, mTexVertex.y + mTexCenter.y);
+                glVertex2f(mVertex.x + mCenter.x, mVertex.y + mCenter.y);
+
+                /* extra vertices */
+                glColor4f( pColor.r, pColor.g, pColor.b, 0.0 ); 
+                glTexCoord2f(mTexVertex.x * FACE_FADE_BORDER_SCALE + mTexCenter.x, 
+                             mTexVertex.y * FACE_FADE_BORDER_SCALE + mTexCenter.y);
+                glVertex2f(mVertex.x * FACE_FADE_BORDER_SCALE + mCenter.x, 
+                           mVertex.y * FACE_FADE_BORDER_SCALE + mCenter.y);
             }
             glEnd();
         }

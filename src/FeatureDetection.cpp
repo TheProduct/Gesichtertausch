@@ -171,79 +171,105 @@ void FeatureDetectionFireFly::setup(int pCaptureWidth,
                                     int pDetectionHeight,
                                     int pCameraID) {
     
+    if (pCaptureWidth != 752 && pCaptureHeight != 480) {
+        console() << "### camera needs resolution of 752x480 pixels." << endl;    
+    }
+    
     mDetectionWidth = pDetectionWidth;
     mDetectionHeight = pDetectionHeight;
     mFaceCascade.load( App::getResourcePath( HAARCASCADE[0] ) );
 
     ///////////////////////////////////
     
-    
-    dc1394camera_list_t * list;   
+
+    /* get camera */
+    dc1394camera_list_t * mCameraList;   
     dc1394_t * d;
     
     d = dc1394_new ();
-    err = dc1394_camera_enumerate (d, &list);
-    if (list->num == 0) {
+    check_error(dc1394_camera_enumerate (d, &mCameraList));
+    if (mCameraList->num == 0) {
         console() << "### no camera found!" << endl;
     }
     
-    camera = dc1394_camera_new (d, list->ids[0].guid);
-    if (!camera) {
-        console() << "### failed to initialize camera with guid %llx" << list->ids[0].guid << endl;
+    const int mCameraID = 0;
+    mCamera = dc1394_camera_new (d, mCameraList->ids[mCameraID].guid);
+    
+    dc1394_iso_release_bandwidth(mCamera, INT_MAX);
+	for (int channel = 0; channel < 64; channel++) {
+		dc1394_iso_release_channel(mCamera, channel);
+	}
+    
+    if (!mCamera) {
+        console() << "### failed to initialize camera with guid %llx" << mCameraList->ids[mCameraID].guid << endl;
+    } else {
+        console() << "+++ camera (GUID): " << mCamera->vendor << "(" << mCamera->guid << ")" << endl;
     }
-    dc1394_camera_free_list (list);
-    console() << "+++ camera (GUID): " << camera->vendor << "(" << camera->guid << ")" << endl;
+    dc1394_camera_free_list (mCameraList);
     
-    ////////////
+    /* setup camera */    
+    dc1394video_mode_t mVideoMode = DC1394_VIDEO_MODE_FORMAT7_0;
+    unsigned int mMaxWidth;
+    unsigned int mMaxHeight;
     
-        err=dc1394_video_set_operation_mode(camera, DC1394_OPERATION_MODE_1394B);
-        err=dc1394_video_set_iso_speed(camera, DC1394_ISO_SPEED_400);
-        err=dc1394_video_set_mode(camera, DC1394_VIDEO_MODE_640x480_MONO8);
-        err=dc1394_video_set_framerate(camera, DC1394_FRAMERATE_30);
-        err=dc1394_capture_setup(camera, 2, DC1394_CAPTURE_FLAGS_DEFAULT);
+    check_error(dc1394_video_set_operation_mode(mCamera, DC1394_OPERATION_MODE_1394B));
+    check_error(dc1394_format7_get_max_image_size(mCamera, mVideoMode, &mMaxWidth, &mMaxHeight));
+    console() << "+++ maximum size for current Format7 mode is " << mMaxWidth << "x" << mMaxHeight << endl;
     
-    ////////////
+    check_error(dc1394_format7_set_roi(mCamera, 
+                                       mVideoMode, 
+                                       DC1394_COLOR_CODING_RAW8,
+                                       DC1394_USE_MAX_AVAIL, 
+                                       0, 0, mMaxWidth, mMaxHeight)); 
+    check_error(dc1394_video_set_mode(mCamera, mVideoMode));
+    const int NUMBER_DMA_BUFFERS = 2;
+    check_error(dc1394_capture_setup(mCamera, 
+                                     NUMBER_DMA_BUFFERS, 
+                                     DC1394_CAPTURE_FLAGS_DEFAULT));
     
-    err=dc1394_video_set_transmission(camera, DC1394_ON);
+    /* grab first frame and dump info */
+    check_error(dc1394_video_set_transmission(mCamera, DC1394_ON));
     
-    dc1394video_frame_t *frame=NULL;
-    console() << "+++ capture ..." << endl;
-    err = dc1394_capture_dequeue(camera, DC1394_CAPTURE_POLICY_WAIT, &frame);
-    if (frame) {
-        console() << "+++ capture state: " << (err == 0 ? "OK" : "BAD") << endl;
-        console() << "+++ dimensions   : " << frame->size[0] << ", " << frame->size[1] << endl;
-        console() << "+++ color coding : " << frame->color_coding << endl;
-        console() << "+++ data depth   : " << frame->data_depth << endl;
-        console() << "+++ stride       : " << frame->stride << endl;
-        console() << "+++ video_mode   : " << frame->video_mode << endl; // (90 == FORMAT7_2)
-        console() << "+++ total_bytes  : " << frame->total_bytes << endl;
-        console() << "+++ packet_size  : " << frame->packet_size << endl;
-        console() << "+++ packets_per_frame : " << frame->packets_per_frame << endl;
-        err = dc1394_capture_enqueue(camera, frame);
+    console() << "+++ capture first frame ..." << endl;
+    dc1394video_frame_t* mFrame = NULL;
+    check_error(dc1394_capture_dequeue(mCamera, DC1394_CAPTURE_POLICY_WAIT, &mFrame));
+    if (mFrame) {
+        console() << "+++ dimensions        : " << mFrame->size[0] << ", " << mFrame->size[1] << endl;
+        console() << "+++ color coding      : " << mFrame->color_coding << endl;
+        console() << "+++ data depth        : " << mFrame->data_depth << endl;
+        console() << "+++ stride            : " << mFrame->stride << endl;
+        console() << "+++ video_mode        : " << mFrame->video_mode << endl;
+        console() << "+++ total_bytes       : " << mFrame->total_bytes << endl;
+        console() << "+++ packet_size       : " << mFrame->packet_size << endl;
+        console() << "+++ packets_per_frame : " << mFrame->packets_per_frame << endl;
+        check_error(dc1394_capture_enqueue(mCamera, mFrame));
+    }    
+}
+
+void FeatureDetectionFireFly::check_error(dc1394error_t pError) {
+    if (pError) {
+        console() << "### ERROR #" << pError << " occured." << endl;
     }
 }
 
 void FeatureDetectionFireFly::update(gl::Texture& pTexture, 
                                      vector<Rectf>& pFaces) {
-    dc1394video_frame_t *frame = NULL;
-    err = dc1394_capture_dequeue(camera, DC1394_CAPTURE_POLICY_POLL, &frame);
-    if (frame) {    
-        unsigned char * mImageData;
-        const unsigned int mSize = frame->size[0] * frame->size[1] * 4;
-        mImageData = new unsigned char [mSize];
-        for (int i=0; i < mSize; i+=4) {
-            mImageData[i+0] = frame->image[i / 4];
-            mImageData[i+1] = frame->image[i / 4];
-            mImageData[i+2] = frame->image[i / 4];
-            mImageData[i+3] = 255;
-        }
-        
-        /* update texture */
-        Surface mSurface = Surface(mImageData, 
-                                   frame->size[0], 
-                                   frame->size[1], 
-                                   frame->size[0] * 4, 
-                                   SurfaceChannelOrder::RGBA);
+    
+    dc1394video_frame_t * mFrame = NULL;
+    check_error(dc1394_capture_dequeue(mCamera, DC1394_CAPTURE_POLICY_POLL, &mFrame));
+    if (mFrame) {
+        const unsigned int RGB_CHANNELS = 3;
+        const unsigned int mRGBImageSize = mFrame->size[0] * mFrame->size[1] * RGB_CHANNELS;
+        unsigned char * mRGBImageData = new unsigned char [mRGBImageSize];
+        check_error(dc1394_bayer_decoding_8bit(mFrame->image, 
+                                               mRGBImageData, 
+                                               mFrame->size[0], mFrame->size[1],
+                                               DC1394_COLOR_FILTER_RGGB,
+                                               DC1394_BAYER_METHOD_BILINEAR));
+        Surface mSurface = Surface(mRGBImageData,
+                                   mFrame->size[0], mFrame->size[1], 
+                                   mFrame->size[0] * RGB_CHANNELS, 
+                                   SurfaceChannelOrder::RGB);
         if (pTexture) {
             pTexture.update(mSurface);
         }
@@ -271,17 +297,19 @@ void FeatureDetectionFireFly::update(gl::Texture& pTexture,
         for( vector<cv::Rect>::const_iterator faceIter = mFaces.begin(); faceIter != mFaces.end(); ++faceIter ) {
             pFaces.push_back( fromOcv( *faceIter ) );
         }        
+
+        ////////////
         
-        err = dc1394_capture_enqueue(camera, frame);
-        delete [] mImageData;
+        check_error(dc1394_capture_enqueue(mCamera, mFrame));
+        delete [] mRGBImageData;
     }
 }
 
 void FeatureDetectionFireFly::dispose() {
-    dc1394_video_set_transmission(camera, DC1394_OFF);
-    dc1394_capture_stop(camera);
-    dc1394_reset_bus (camera);
-    dc1394_camera_free(camera);
+    dc1394_video_set_transmission(mCamera, DC1394_OFF);
+    dc1394_capture_stop(mCamera);
+    dc1394_reset_bus (mCamera);
+    dc1394_camera_free(mCamera);
 }
 
 #endif

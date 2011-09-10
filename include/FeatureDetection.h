@@ -102,7 +102,7 @@ public:
     void dispose();
     
 private:
-    void detect(    vector<Rectf>& pFaces,
+    void detect(vector<Rectf>& pFaces,
                 cv::Mat& pImage,
                 cv::CascadeClassifier& pCascade, 
                 double pScale);
@@ -125,9 +125,10 @@ public:
     void dispose();
     
 private:
+    void                    check_error(dc1394error_t pError);
     int                     mDetectionWidth;
     int                     mDetectionHeight;
-    dc1394camera_t          *camera;
+    dc1394camera_t          *mCamera;
     dc1394error_t           err;
 };
 #endif
