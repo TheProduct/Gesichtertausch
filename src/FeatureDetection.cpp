@@ -227,6 +227,11 @@ void FeatureDetectionFireFly::setup(int pCaptureWidth,
                                      NUMBER_DMA_BUFFERS, 
                                      DC1394_CAPTURE_FLAGS_DEFAULT));
     
+    //TODO tinker with auto exposure and white balance (if necessary)
+//    uint32_t mFeature;
+//    check_error(dc1394_feature_get_value(mCamera, DC1394_FEATURE_EXPOSURE, &mFeature));
+//    console() << "+++ feature        : " << mFeature << endl;
+    
     /* grab first frame and dump info */
     check_error(dc1394_video_set_transmission(mCamera, DC1394_ON));
     
