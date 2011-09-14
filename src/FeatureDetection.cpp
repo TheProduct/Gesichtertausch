@@ -190,6 +190,7 @@ void FeatureDetectionFireFly::setup(int pCaptureWidth,
     check_error(dc1394_camera_enumerate (d, &mCameraList));
     if (mCameraList->num == 0) {
         console() << "### no camera found!" << endl;
+        exit(1);
     }
     
     const int mCameraID = 0;
@@ -235,6 +236,86 @@ void FeatureDetectionFireFly::setup(int pCaptureWidth,
     /* grab first frame and dump info */
     check_error(dc1394_video_set_transmission(mCamera, DC1394_ON));
     
+    /* setting features */
+    console() << "+++ adjusting camera features ..." << endl;
+    
+    const bool DUMP_FEATURE_STATES = false;
+    dc1394feature_mode_t mMode;
+
+    if (DUMP_FEATURE_STATES) {
+        for (int i=DC1394_FEATURE_MIN; i<DC1394_FEATURE_MAX+1 ;++i) {
+            check_error(dc1394_feature_get_mode(mCamera, (dc1394feature_t)i, &mMode));
+            console() << "+++ " << i << "      mode     : " << (mMode == DC1394_FEATURE_MODE_MANUAL ? "MANUAL" : "AUTO") << "("<< mMode <<")" << endl;
+        }
+    }
+    
+    const bool SET_FEATURE_STATES = true;
+    if (SET_FEATURE_STATES) {
+        dc1394feature_mode_t mDesiredMode = DC1394_FEATURE_MODE_AUTO;
+        
+        check_error(dc1394_feature_set_mode(mCamera, DC1394_FEATURE_EXPOSURE, mDesiredMode));
+        check_error(dc1394_feature_set_mode(mCamera, DC1394_FEATURE_SHUTTER, mDesiredMode));
+        check_error(dc1394_feature_set_mode(mCamera, DC1394_FEATURE_BRIGHTNESS, mDesiredMode));
+        check_error(dc1394_feature_set_mode(mCamera, DC1394_FEATURE_GAIN, mDesiredMode));
+
+        check_error(dc1394_feature_get_mode(mCamera, DC1394_FEATURE_EXPOSURE, &mMode));
+        console() << "+++ exposure mode     : " << (mMode == DC1394_FEATURE_MODE_MANUAL ? "MANUAL" : "AUTO") << "("<< mMode <<")" << endl;
+        check_error(dc1394_feature_get_mode(mCamera, DC1394_FEATURE_SHUTTER, &mMode));
+        console() << "+++ shutter mode      : " << (mMode == DC1394_FEATURE_MODE_MANUAL ? "MANUAL" : "AUTO") << "("<< mMode <<")" << endl;        
+        check_error(dc1394_feature_get_mode(mCamera, DC1394_FEATURE_BRIGHTNESS, &mMode));
+        console() << "+++ brightness mode   : " << (mMode == DC1394_FEATURE_MODE_MANUAL ? "MANUAL" : "AUTO") << "("<< mMode <<")" << endl;
+        check_error(dc1394_feature_get_mode(mCamera, DC1394_FEATURE_GAIN, &mMode));
+        console() << "+++ gain mode         : " << (mMode == DC1394_FEATURE_MODE_MANUAL ? "MANUAL" : "AUTO") << "("<< mMode <<")" << endl;
+        
+        const bool DUMP_FEATURE = true;    
+        if (DUMP_FEATURE) {
+            console() << "+++ current state ..." << endl;
+            uint32_t mFeature;
+            check_error(dc1394_feature_get_value(mCamera, DC1394_FEATURE_EXPOSURE, &mFeature));
+            console() << "+++ exposure          : " << mFeature << endl;
+            check_error(dc1394_feature_get_value(mCamera, DC1394_FEATURE_SHUTTER, &mFeature));
+            console() << "+++ shutter           : " << mFeature << endl;
+            check_error(dc1394_feature_get_value(mCamera, DC1394_FEATURE_BRIGHTNESS, &mFeature));
+            console() << "+++ brightness        : " << mFeature << endl;
+            check_error(dc1394_feature_get_value(mCamera, DC1394_FEATURE_GAIN, &mFeature));
+            console() << "+++ gain              : " << mFeature << endl;
+        }
+
+        console() << endl;
+    }
+
+    /*
+     DC1394_FEATURE_MODE_MANUAL= 736,
+     DC1394_FEATURE_MODE_AUTO,
+     DC1394_FEATURE_MODE_ONE_PUSH_AUTO
+     */
+
+    /*
+     DC1394_FEATURE_BRIGHTNESS= 416,
+     DC1394_FEATURE_EXPOSURE,
+     DC1394_FEATURE_SHARPNESS,
+     DC1394_FEATURE_WHITE_BALANCE,
+     DC1394_FEATURE_HUE,
+     DC1394_FEATURE_SATURATION,
+     DC1394_FEATURE_GAMMA,
+     DC1394_FEATURE_SHUTTER,
+     DC1394_FEATURE_GAIN,
+     DC1394_FEATURE_IRIS,
+     DC1394_FEATURE_FOCUS,
+     DC1394_FEATURE_TEMPERATURE,
+     DC1394_FEATURE_TRIGGER,
+     DC1394_FEATURE_TRIGGER_DELAY,
+     DC1394_FEATURE_WHITE_SHADING,
+     DC1394_FEATURE_FRAME_RATE,
+     DC1394_FEATURE_ZOOM,
+     DC1394_FEATURE_PAN,
+     DC1394_FEATURE_TILT,
+     DC1394_FEATURE_OPTICAL_FILTER,
+     DC1394_FEATURE_CAPTURE_SIZE,
+     DC1394_FEATURE_CAPTURE_QUALITY
+     */
+    
+    /* grab first frame */
     console() << "+++ capture first frame ..." << endl;
     dc1394video_frame_t* mFrame = NULL;
     check_error(dc1394_capture_dequeue(mCamera, DC1394_CAPTURE_POLICY_WAIT, &mFrame));
@@ -247,8 +328,9 @@ void FeatureDetectionFireFly::setup(int pCaptureWidth,
         console() << "+++ total_bytes       : " << mFrame->total_bytes << endl;
         console() << "+++ packet_size       : " << mFrame->packet_size << endl;
         console() << "+++ packets_per_frame : " << mFrame->packets_per_frame << endl;
+        console() << endl;
         check_error(dc1394_capture_enqueue(mCamera, mFrame));
-    }    
+    }
 }
 
 void FeatureDetectionFireFly::check_error(dc1394error_t pError) {
@@ -259,10 +341,34 @@ void FeatureDetectionFireFly::check_error(dc1394error_t pError) {
 
 void FeatureDetectionFireFly::update(gl::Texture& pTexture, 
                                      vector<Rectf>& pFaces) {
+    /* features */
+    const bool SET_FEATURE = false;
+    if (SET_FEATURE) {
+        check_error(dc1394_feature_set_value(mCamera, DC1394_FEATURE_EXPOSURE, 20));
+        check_error(dc1394_feature_set_value(mCamera, DC1394_FEATURE_SHUTTER, 200));
+        check_error(dc1394_feature_set_value(mCamera, DC1394_FEATURE_BRIGHTNESS, 166));
+        check_error(dc1394_feature_set_value(mCamera, DC1394_FEATURE_GAIN, 17));
+    }
+    
+    const bool DUMP_FEATURE = false;    
+    if (DUMP_FEATURE) {
+        uint32_t mFeature;
+        check_error(dc1394_feature_get_value(mCamera, DC1394_FEATURE_EXPOSURE, &mFeature));
+        console() << "+++ exposure       : " << mFeature << endl;
+        check_error(dc1394_feature_get_value(mCamera, DC1394_FEATURE_SHUTTER, &mFeature));
+        console() << "+++ shutter        : " << mFeature << endl;
+        check_error(dc1394_feature_get_value(mCamera, DC1394_FEATURE_BRIGHTNESS, &mFeature));
+        console() << "+++ brightness     : " << mFeature << endl;
+        check_error(dc1394_feature_get_value(mCamera, DC1394_FEATURE_GAIN, &mFeature));
+        console() << "+++ gain           : " << mFeature << endl;
+    }
+    
+    /* grab frames */
     
     dc1394video_frame_t * mFrame = NULL;
     check_error(dc1394_capture_dequeue(mCamera, DC1394_CAPTURE_POLICY_POLL, &mFrame));
     if (mFrame) {
+                
         const unsigned int RGB_CHANNELS = 3;
         const unsigned int mRGBImageSize = mFrame->size[0] * mFrame->size[1] * RGB_CHANNELS;
         unsigned char * mRGBImageData = new unsigned char [mRGBImageSize];

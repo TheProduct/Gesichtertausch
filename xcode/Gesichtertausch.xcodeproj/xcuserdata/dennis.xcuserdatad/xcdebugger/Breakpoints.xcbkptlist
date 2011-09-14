@@ -9,11 +9,11 @@
          continueAfterRunningActions = "No"
          isPathRelative = "0"
          filePath = "/Users/dennis/Documents/the-product/projects/wunder/02_work/dennis/dev/Gesichtertausch/src/FeatureDetection.cpp"
-         timestampString = "337587457.417264"
+         timestampString = "337678965.710979"
          startingColumnNumber = "9223372036854775807"
          endingColumnNumber = "9223372036854775807"
-         startingLineNumber = "254"
-         endingLineNumber = "254"
+         startingLineNumber = "337"
+         endingLineNumber = "337"
          landmarkName = "FeatureDetectionFireFly::check_error(dc1394error_t pError)"
          landmarkType = "5">
       </FileBreakpoint>
