@@ -41,6 +41,11 @@ void FeatureDetectionCinder::setup(int pCaptureWidth,
     mCapture = Capture( pCaptureWidth, pCaptureHeight );
     mCapture.start();    
     mFaceCascade.load( App::getResourcePath( HAARCASCADE[0] ) );
+    
+    CAMERA_EXPOSURE = 20;
+    CAMERA_SHUTTER = 200;
+    CAMERA_BRIGHTNESS = 166;
+    CAMERA_GAIN = 17;
 }
 
 void FeatureDetectionCinder::update(gl::Texture& pTexture, vector<Rectf>& pFaces) {
@@ -344,10 +349,10 @@ void FeatureDetectionFireFly::update(gl::Texture& pTexture,
     /* features */
     const bool SET_FEATURE = false;
     if (SET_FEATURE) {
-        check_error(dc1394_feature_set_value(mCamera, DC1394_FEATURE_EXPOSURE, 20));
-        check_error(dc1394_feature_set_value(mCamera, DC1394_FEATURE_SHUTTER, 200));
-        check_error(dc1394_feature_set_value(mCamera, DC1394_FEATURE_BRIGHTNESS, 166));
-        check_error(dc1394_feature_set_value(mCamera, DC1394_FEATURE_GAIN, 17));
+        check_error(dc1394_feature_set_value(mCamera, DC1394_FEATURE_EXPOSURE, CAMERA_EXPOSURE));
+        check_error(dc1394_feature_set_value(mCamera, DC1394_FEATURE_SHUTTER, CAMERA_SHUTTER));
+        check_error(dc1394_feature_set_value(mCamera, DC1394_FEATURE_BRIGHTNESS, CAMERA_BRIGHTNESS));
+        check_error(dc1394_feature_set_value(mCamera, DC1394_FEATURE_GAIN, CAMERA_GAIN));
     }
     
     const bool DUMP_FEATURE = false;    

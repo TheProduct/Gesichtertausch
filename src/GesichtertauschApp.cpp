@@ -32,6 +32,9 @@ using namespace mowa::sgui;
 
 const std::string RES_SETTINGS = "settings.txt";
 
+/* switch resolution */
+bool MyDisplaySwitchToMode (CGDirectDisplayID display, CFDictionaryRef mode);
+int switch_resolution (int pWidth, int pHeight, double pRefreshRate);
 
 class GesichtertauschApp : public AppBasic {
 public:
@@ -135,16 +138,11 @@ void GesichtertauschApp::setup() {
     mGui->addParam("MIN_LIFETIME_TO_VIEW", &MIN_LIFETIME_TO_VIEW, 0, 10, 1.0);
     mGui->addParam("ENABLE_SHADER", &ENABLE_SHADER, 0, 1, 0);
     mGui->addParam("FACE_COLOR_UNO", &FACE_COLOR_UNO, ColorA(0, 1, 1, 1), SimpleGUI::RGB);
-    mGui->addParam("FACE_COLOR_DUO", &FACE_COLOR_DUO, ColorA(1, 0, 0, 1), SimpleGUI::RGB);
-    mGui->addParam("BACKGROUND_IMAGE_COLOR", &BACKGROUND_IMAGE_COLOR, ColorA(1, 1, 1, 1), SimpleGUI::RGB);
+    mGui->addParam("FACE_COLOR_DUO", &FACE_COLOR_DUO, ColorA(1, 1, 1, 1), SimpleGUI::RGB);
     mGui->addParam("BACKGROUND_IMAGE_COLOR", &BACKGROUND_IMAGE_COLOR, ColorA(1, 1, 1, 1), SimpleGUI::RGB);
     mGui->addParam("FACE_BORDER_SCALE", &FACE_BORDER_SCALE, 0, 3, 0.7);
     mGui->addParam("FACE_FADE_BORDER_SCALE", &FACE_FADE_BORDER_SCALE, 1, 2, 1.4);
-    
-    mGui->addSeparator();
-    mFaceOut = mGui->addLabel("");
-    mFPSOut = mGui->addLabel("");
-        
+            
     /* clean up controller window */
     mGui->getControlByName("WINDOW_WIDTH")->active=false;
     mGui->getControlByName("WINDOW_HEIGHT")->active=false;
@@ -154,6 +152,8 @@ void GesichtertauschApp::setup() {
     mGui->getControlByName("DETECTION_HEIGHT")->active=false;
     mGui->getControlByName("FULLSCREEN")->active=false;
     mGui->getControlByName("TRACKING")->active=false;
+    mGui->getControlByName("BACKGROUND_IMAGE_COLOR")->active=false;
+    mGui->getControlByName("BACKGROUND_IMAGE_COLOR")->active=false;
     
     mGui->load(getResourcePath(RES_SETTINGS));
     mGui->setEnabled(false);
@@ -161,6 +161,7 @@ void GesichtertauschApp::setup() {
     setFullScreen( FULLSCREEN );
     if (FULLSCREEN) {
         hideCursor();
+//        switch_resolution (WINDOW_WIDTH, WINDOW_HEIGHT, 60.0);
     }
     setWindowSize( WINDOW_WIDTH, WINDOW_HEIGHT );
     
@@ -191,13 +192,23 @@ void GesichtertauschApp::setup() {
     mGui->addParam("DETECT_FLAGS",&(mFaceDetection->DETECT_FLAGS), CV_HAAR_DO_CANNY_PRUNING, CV_HAAR_DO_ROUGH_SEARCH, CV_HAAR_DO_CANNY_PRUNING);
     mGui->addParam("DETECT_SCALE_FACTOR",&(mFaceDetection->DETECT_SCALE_FACTOR), 1.1, 5, 1.2);
     mGui->addParam("DETECT_MIN_NEIGHBORS",&(mFaceDetection->DETECT_MIN_NEIGHBORS), 1, 20, 2);
+
+    mGui->addParam("CAMERA_EXPOSURE", &(mFaceDetection->CAMERA_EXPOSURE), 0, 255, 20);
+    mGui->addParam("CAMERA_SHUTTER", &(mFaceDetection->CAMERA_SHUTTER), 0, 255, 200);
+    mGui->addParam("CAMERA_BRIGHTNESS", &(mFaceDetection->CAMERA_BRIGHTNESS), 0, 255, 166);
+    mGui->addParam("CAMERA_GAIN", &(mFaceDetection->CAMERA_GAIN), 0, 255, 17);
+
     mGui->load(getResourcePath(RES_SETTINGS)); // HACK this is quite stupid, but we have a catch 22 here ...
     mFaceDetection->setup(CAMERA_WIDTH, 
                           CAMERA_HEIGHT, 
                           DETECTION_WIDTH, 
                           DETECTION_HEIGHT,
                           0);
-    mGui->dump(); 
+    mGui->dump();
+    
+    mGui->addSeparator();
+    mFaceOut = mGui->addLabel("");
+    mFPSOut = mGui->addLabel("");
 }
 
 void GesichtertauschApp::update() {
@@ -330,14 +341,15 @@ void GesichtertauschApp::update() {
 
 void GesichtertauschApp::draw() {
     
-    glClearColor( 0.0, 0.0, 0.0, 1.0 );
+    glClearColor( 0, 0, 0, 1.0 );
     glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
     
     if ( ! mCameraTexture ) {
         return;
     }
         
-    gl::setMatricesWindow( getWindowSize() ),
+//    gl::setMatricesWindow( getWindowSize() ),
+    gl::setMatricesWindow(WINDOW_WIDTH, WINDOW_HEIGHT);
     gl::enableAlphaBlending();
     glScalef(-1.0, 1.0, 1.0);
     glTranslatef(-WINDOW_WIDTH, 0, 0);
@@ -346,12 +358,12 @@ void GesichtertauschApp::draw() {
     // TODO make this more opt'd
     if (ENABLE_SHADER) {
         mShader.bind();
-        const int STEPS = 8;
+        const int STEPS = 32;
         float mThresholds[STEPS];// = {0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0};
         for (int i=0; i < STEPS; ++i) {
             mThresholds[i] = float(i) / float(STEPS - 1);
         }
-        mShader.uniform("thresholds", mThresholds, 16);   
+        mShader.uniform("thresholds", mThresholds, STEPS);   
         mShader.uniform( "tex0", 0 );
     }
 
@@ -413,13 +425,40 @@ void GesichtertauschApp::draw() {
         mShader.unbind();
     }
 
+    /* mask */
+    float MASK_LEFT_TOP = 1;
+    float MASK_LEFT_BOTTOM = 1;
+    float MASK_RIGHT_TOP = 1;
+    float MASK_RIGHT_BOTTOM = 1;
+    
+    gl::color(0, 0, 0, 1);
+
+    Path2d mPathLeft;
+    mPathLeft.moveTo(0, 0);
+    mPathLeft.lineTo(MASK_LEFT_TOP, 0);
+    mPathLeft.lineTo(MASK_LEFT_BOTTOM, WINDOW_HEIGHT);
+    mPathLeft.lineTo(0, WINDOW_HEIGHT);
+    mPathLeft.close();    
+    gl::drawSolid(mPathLeft);
+    
+    Path2d mPathRight;
+    mPathRight.moveTo(WINDOW_WIDTH, 0);
+    mPathRight.lineTo(WINDOW_WIDTH-MASK_RIGHT_TOP, 0);
+    mPathRight.lineTo(WINDOW_WIDTH-MASK_RIGHT_BOTTOM, WINDOW_HEIGHT);
+    mPathRight.lineTo(WINDOW_WIDTH, WINDOW_HEIGHT);
+    mPathRight.close();    
+    gl::drawSolid(mPathRight);
+
     /* draw entity IDs */
-    for( vector<FaceEntity>::const_iterator mIter = mEntities.begin(); mIter != mEntities.end(); ++mIter ) {
-        const FaceEntity mEntity = *mIter;
-        std::stringstream mStr;
-        mStr << mEntity.ID;
-        gl::drawStringCentered(mStr.str(), mEntity.border.getCenter(), Color(1, 0, 0), mFont);
-    }    
+    const bool DRAW_ENTITY_ID = false;
+    if (DRAW_ENTITY_ID) {
+        for( vector<FaceEntity>::const_iterator mIter = mEntities.begin(); mIter != mEntities.end(); ++mIter ) {
+            const FaceEntity mEntity = *mIter;
+            std::stringstream mStr;
+            mStr << mEntity.ID;
+            gl::drawStringCentered(mStr.str(), mEntity.border.getCenter(), Color(1, 0, 0), mFont);
+        }    
+    }
         
     /* gooey */
     mGui->draw();
@@ -512,6 +551,48 @@ void GesichtertauschApp::keyDown( KeyEvent pEvent ) {
         case KeyEvent::KEY_ESCAPE:  setFullScreen( false ); quit(); break;
         case KeyEvent::KEY_SPACE: mGui->setEnabled(!mGui->isEnabled());break;
     }
+}
+
+int switch_resolution (int pWidth, int pHeight, double pRefreshRate) {
+    //	int	h; 							// horizontal resolution
+    //	int v; 							// vertical resolution
+	CFDictionaryRef switchMode; 	// mode to switch to
+	CGDirectDisplayID mainDisplay;  // ID of main display
+    
+	CFDictionaryRef CGDisplayCurrentMode(CGDirectDisplayID display);
+    
+    //	if (argc == 1) {
+    //	    CGRect screenFrame = CGDisplayBounds(kCGDirectMainDisplay);
+    //		CGSize screenSize  = screenFrame.size;
+    //		printf("%f %d\n", screenSize.width, screenSize.height);
+    //		return 0;
+    //	}
+    //	if (argc != 3 || !(h = atoi(argv[1])) || !(v = atoi(argv[2])) ) {
+    //		fprintf(stderr, "ERROR: Use %s horres vertres\n", argv[0]);
+    //		return -1;
+    //	}
+    
+	mainDisplay = CGMainDisplayID();
+    //	switchMode = CGDisplayBestModeForParameters(mainDisplay, 32, pWidth, pHeight, NULL);
+	switchMode = CGDisplayBestModeForParametersAndRefreshRate(mainDisplay, 32, pWidth, pHeight, pRefreshRate, NULL);
+    
+	if (! MyDisplaySwitchToMode(mainDisplay, switchMode)) {
+	    fprintf(stderr, "Error changing resolution to %d %d\n", pWidth, pHeight);
+		return 1;
+	}
+    
+	return 0;
+}
+
+bool MyDisplaySwitchToMode (CGDirectDisplayID display, CFDictionaryRef mode)
+{
+	CGDisplayConfigRef config;
+	if (CGBeginDisplayConfiguration(&config) == kCGErrorSuccess) {
+		CGConfigureDisplayMode(config, display, mode);
+		CGCompleteDisplayConfiguration(config, kCGConfigureForSession );
+		return true;
+	}
+	return false;
 }
 
 CINDER_APP_BASIC( GesichtertauschApp, RendererGl )

@@ -41,6 +41,13 @@ public:
     float DETECT_SCALE_FACTOR;
     int DETECT_MIN_NEIGHBORS;
     int DETECT_FLAGS;
+    
+    int CAMERA_EXPOSURE;//, 20));
+    int CAMERA_SHUTTER;//, 200));
+    int CAMERA_BRIGHTNESS;//, 166));
+    int CAMERA_GAIN;//, 17));
+
+    
 protected:
     cv::CascadeClassifier	mFaceCascade;
     void doFeatureDetection(const cv::Mat& pImage, 
