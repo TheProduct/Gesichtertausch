@@ -24,7 +24,5 @@
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
-	<key>LSUIPresentationMode</key>
-	<integer>4</integer>
 </dict>
 </plist>

@@ -22,6 +22,10 @@
 		9527E29614065DC800601156 /* pf_tempesta_seven.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 9527E29514065DC800601156 /* pf_tempesta_seven.ttf */; };
 		9527E29C14065E2B00601156 /* SimpleGUI.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9527E29B14065E2B00601156 /* SimpleGUI.cpp */; };
 		9527E2A81406605600601156 /* settings.txt in Resources */ = {isa = PBXBuildFile; fileRef = 9527E2A71406605600601156 /* settings.txt */; };
+		958759F5142690B600888F8D /* OscBundle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 958759F1142690B600888F8D /* OscBundle.cpp */; };
+		958759F6142690B600888F8D /* OscListener.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 958759F2142690B600888F8D /* OscListener.cpp */; };
+		958759F7142690B600888F8D /* OscMessage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 958759F3142690B600888F8D /* OscMessage.cpp */; };
+		958759F8142690B600888F8D /* OscSender.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 958759F4142690B600888F8D /* OscSender.cpp */; };
 		9599382E140B91EF004E6F2E /* FeatureDetection.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9599382D140B91EF004E6F2E /* FeatureDetection.cpp */; };
 		95993834140C1A97004E6F2E /* haarcascade_frontalface_default.xml in Resources */ = {isa = PBXBuildFile; fileRef = 95993833140C1A97004E6F2E /* haarcascade_frontalface_default.xml */; };
 		95993837140C1B8B004E6F2E /* haarcascade_frontalface_alt_tree.xml in Resources */ = {isa = PBXBuildFile; fileRef = 95993835140C1B8B004E6F2E /* haarcascade_frontalface_alt_tree.xml */; };
@@ -55,6 +59,10 @@
 		9527E29B14065E2B00601156 /* SimpleGUI.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SimpleGUI.cpp; path = ../src/SimpleGUI.cpp; sourceTree = "<group>"; };
 		9527E29D14065E3300601156 /* SimpleGUI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SimpleGUI.h; path = ../include/SimpleGUI.h; sourceTree = "<group>"; };
 		9527E2A71406605600601156 /* settings.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = settings.txt; path = ../resources/settings.txt; sourceTree = "<group>"; };
+		958759F1142690B600888F8D /* OscBundle.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = OscBundle.cpp; path = "../../../../../../../../../dev/cinder-lion/blocks/osc/src/OscBundle.cpp"; sourceTree = "<group>"; };
+		958759F2142690B600888F8D /* OscListener.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = OscListener.cpp; path = "../../../../../../../../../dev/cinder-lion/blocks/osc/src/OscListener.cpp"; sourceTree = "<group>"; };
+		958759F3142690B600888F8D /* OscMessage.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = OscMessage.cpp; path = "../../../../../../../../../dev/cinder-lion/blocks/osc/src/OscMessage.cpp"; sourceTree = "<group>"; };
+		958759F4142690B600888F8D /* OscSender.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = OscSender.cpp; path = "../../../../../../../../../dev/cinder-lion/blocks/osc/src/OscSender.cpp"; sourceTree = "<group>"; };
 		9599382D140B91EF004E6F2E /* FeatureDetection.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FeatureDetection.cpp; path = ../src/FeatureDetection.cpp; sourceTree = "<group>"; };
 		95993831140B9923004E6F2E /* FeatureDetection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FeatureDetection.h; path = ../include/FeatureDetection.h; sourceTree = "<group>"; };
 		95993833140C1A97004E6F2E /* haarcascade_frontalface_default.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = haarcascade_frontalface_default.xml; path = ../../../../../../../../coding/opencv/cvs/opencv/data/haarcascades/haarcascade_frontalface_default.xml; sourceTree = "<group>"; };
@@ -196,6 +204,7 @@
 		9527E29814065E0800601156 /* Blocks */ = {
 			isa = PBXGroup;
 			children = (
+				958759EF142690A800888F8D /* osc */,
 				9527E29714065DD000601156 /* SimpleGUI */,
 			);
 			name = Blocks;
@@ -215,6 +224,17 @@
 				9527E29B14065E2B00601156 /* SimpleGUI.cpp */,
 			);
 			name = src;
+			sourceTree = "<group>";
+		};
+		958759EF142690A800888F8D /* osc */ = {
+			isa = PBXGroup;
+			children = (
+				958759F1142690B600888F8D /* OscBundle.cpp */,
+				958759F2142690B600888F8D /* OscListener.cpp */,
+				958759F3142690B600888F8D /* OscMessage.cpp */,
+				958759F4142690B600888F8D /* OscSender.cpp */,
+			);
+			name = osc;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -290,6 +310,10 @@
 				00BAE65A0E7ED9C10018A608 /* GesichtertauschApp.cpp in Sources */,
 				9527E29C14065E2B00601156 /* SimpleGUI.cpp in Sources */,
 				9599382E140B91EF004E6F2E /* FeatureDetection.cpp in Sources */,
+				958759F5142690B600888F8D /* OscBundle.cpp in Sources */,
+				958759F6142690B600888F8D /* OscListener.cpp in Sources */,
+				958759F7142690B600888F8D /* OscMessage.cpp in Sources */,
+				958759F8142690B600888F8D /* OscSender.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -315,6 +339,7 @@
 					"\"$(CINDER_PATH)/blocks/opencv/lib/macosx/libopencv_core.a\"",
 					"\"$(CINDER_PATH)/blocks/opencv/lib/macosx/libopencv_objdetect.a\"",
 					/opt/local/lib/libdc1394.dylib,
+					"\"$(CINDER_PATH)/blocks/osc/lib/macosx/osc.a\"",
 				);
 				PRODUCT_NAME = Gesichtertausch;
 				WRAPPER_EXTENSION = app;
@@ -342,6 +367,7 @@
 					"\"$(CINDER_PATH)/blocks/opencv/lib/macosx/libopencv_objdetect.a\"",
 					"\"$(CINDER_PATH)/blocks/opencv/lib/macosx/libopencv_core.a\"",
 					/opt/local/lib/libdc1394.dylib,
+					"\"$(CINDER_PATH)/blocks/osc/lib/macosx/osc.a\"",
 				);
 				PRODUCT_NAME = Gesichtertausch;
 				STRIP_INSTALLED_PRODUCT = YES;
@@ -365,7 +391,7 @@
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.5;
 				SDKROOT = macosx;
-				USER_HEADER_SEARCH_PATHS = "\"$(CINDER_PATH)/include\" \"$(CINDER_PATH)/blocks/opencv/include\" ../include";
+				USER_HEADER_SEARCH_PATHS = "\"$(CINDER_PATH)/include\" \"$(CINDER_PATH)/blocks/opencv/include\" ../include \"$(CINDER_PATH)/blocks/osc/include\"";
 			};
 			name = Debug;
 		};
@@ -385,7 +411,7 @@
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.5;
 				SDKROOT = macosx;
-				USER_HEADER_SEARCH_PATHS = "\"$(CINDER_PATH)/include\" \"$(CINDER_PATH)/blocks/opencv/include\" ../include";
+				USER_HEADER_SEARCH_PATHS = "\"$(CINDER_PATH)/include\" \"$(CINDER_PATH)/blocks/opencv/include\" ../include \"$(CINDER_PATH)/blocks/osc/include\"";
 			};
 			name = Release;
 		};

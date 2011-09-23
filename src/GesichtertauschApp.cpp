@@ -22,6 +22,8 @@
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
 
+#include "OscSender.h"
+
 #include "SimpleGUI.h"
 
 
@@ -59,8 +61,9 @@ private:
         }	
     };
 
-    void drawEntity(const FaceEntity& pEntity, const ColorA& pColor);
-    
+    void    drawEntity(const FaceEntity& pEntity, const ColorA& pColor);
+    void    heartbeat(double mDeltaTime);
+
     FeatureDetection*       mFaceDetection;
     gl::Texture             mCameraTexture;
     vector<FaceEntity>      mEntities;
@@ -99,15 +102,32 @@ private:
         
     /* shader */
     gl::GlslProg            mShader;
+    
+    /* watchdog */
+    osc::Sender     mWatchdogSender;
+	std::string     mWatchdogHost;
+	int             mWatchdogPort;
+    float           mWatchdogCounter;
+    float           mWatchdogInterval;
 };
 
 
 void GesichtertauschApp::setup() {
+    
+    console() << "+++ Gesichtertausch (PID " << getpid() << ")." << endl;
+    
     mTime = 0.0;
     mSerialID = 0;
     FACE_COLOR_UNO = ColorA(0, 1, 1, 1);
     FACE_COLOR_DUO = ColorA(1, 0, 0, 1);
     BACKGROUND_IMAGE_COLOR = ColorA(1, 1, 1, 1);
+    
+    /* watchdog */
+    mWatchdogHost = "localhost";
+	mWatchdogPort = 8080;
+	mWatchdogSender.setup(mWatchdogHost, mWatchdogPort);
+    mWatchdogCounter = 0.0;
+    mWatchdogInterval = 2.5;
     
     /* shader */
     try {
@@ -158,12 +178,12 @@ void GesichtertauschApp::setup() {
     mGui->load(getResourcePath(RES_SETTINGS));
     mGui->setEnabled(false);
     
+    setWindowSize( WINDOW_WIDTH, WINDOW_HEIGHT );
     setFullScreen( FULLSCREEN );
     if (FULLSCREEN) {
         hideCursor();
 //        switch_resolution (WINDOW_WIDTH, WINDOW_HEIGHT, 60.0);
     }
-    setWindowSize( WINDOW_WIDTH, WINDOW_HEIGHT );
     
     mFont = Font(loadResource("pf_tempesta_seven.ttf"), 8);
 
@@ -211,9 +231,26 @@ void GesichtertauschApp::setup() {
     mFPSOut = mGui->addLabel("");
 }
 
+void GesichtertauschApp::heartbeat(double mDeltaTime) {
+    mWatchdogCounter += mDeltaTime;
+    if (mWatchdogCounter > mWatchdogInterval) {
+        mWatchdogCounter = 0.0;
+        console() << "+++ heartbeat" << std::endl;
+        osc::Message mMessage;
+        mMessage.addIntArg(getpid());
+        mMessage.setAddress("/watchdog/register");
+        mMessage.setRemoteEndpoint(mWatchdogHost, mWatchdogPort);
+        mWatchdogSender.sendMessage(mMessage);
+    }    
+}
+
 void GesichtertauschApp::update() {
     double mDeltaTime = getElapsedSeconds() - mTime;
     mTime = getElapsedSeconds();
+    
+    /* heartbeat */
+    heartbeat(mDeltaTime);
+
     {
         stringstream mStr;
         mStr << "FPS: " << getAverageFps();
@@ -546,6 +583,15 @@ void GesichtertauschApp::keyDown( KeyEvent pEvent ) {
         case 'd': mGui->dump(); break;
         case 'l': mGui->load(getResourcePath(RES_SETTINGS)); break;
         case 's': mGui->save(getResourcePath(RES_SETTINGS)); break;
+//        case 'm':
+//            CGDirectDisplayID mDisplayID = getSettings().getDisplay()->getCGDirectDisplayID();
+//            CGDisplayConfigRef pConfigRef;
+//            CGBeginDisplayConfiguration (&pConfigRef);
+//            CGConfigureDisplayOrigin (pConfigRef,
+//                                      mDisplayID,
+//                                      -100, 0);
+//            CGCompleteDisplayConfiguration (pConfigRef, kCGConfigureForAppOnly);
+//            break;
     }
     switch(pEvent.getCode()) {
         case KeyEvent::KEY_ESCAPE:  setFullScreen( false ); quit(); break;
@@ -562,9 +608,9 @@ int switch_resolution (int pWidth, int pHeight, double pRefreshRate) {
 	CFDictionaryRef CGDisplayCurrentMode(CGDirectDisplayID display);
     
     //	if (argc == 1) {
-    //	    CGRect screenFrame = CGDisplayBounds(kCGDirectMainDisplay);
-    //		CGSize screenSize  = screenFrame.size;
-    //		printf("%f %d\n", screenSize.width, screenSize.height);
+	    CGRect screenFrame = CGDisplayBounds(kCGDirectMainDisplay);
+		CGSize screenSize  = screenFrame.size;
+		printf("%f %f\n", screenSize.width, screenSize.height);
     //		return 0;
     //	}
     //	if (argc != 3 || !(h = atoi(argv[1])) || !(v = atoi(argv[2])) ) {
@@ -595,4 +641,4 @@ bool MyDisplaySwitchToMode (CGDirectDisplayID display, CFDictionaryRef mode)
 	return false;
 }
 
-CINDER_APP_BASIC( GesichtertauschApp, RendererGl )
+CINDER_APP_BASIC( GesichtertauschApp, RendererGl(0) )
